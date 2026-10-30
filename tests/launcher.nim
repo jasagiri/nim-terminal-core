@@ -20,6 +20,12 @@ proc main(): int =
     if st.state != csContinued: doAssert giveTerminal(0, own).isOk
     case st.state
     of csStopped:
+      if st.code in [int(SIGTTIN), int(SIGTTOU)]:
+        # 前面を渡す前に端末を触って止まった子 (spawn と giveTerminal の間に走った)。もう渡したので続けさせる
+        # (nim-shell-lang の J-1 と同じ扱い)。Ctrl+Z の停止 (SIGTSTP) とは分ける
+        doAssert giveTerminal(0, pid).isOk
+        doAssert signalGroup(pid, SIGCONT).isOk
+        continue
       say "STOPPED"
       var buf: array[16, char]
       discard posix.read(0, addr buf[0], buf.len)   # Why discard: 1 行を待つだけ
