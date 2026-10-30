@@ -1,12 +1,13 @@
 ## TC-L-*: 縦・横・格子・重ね・任意の割り付け、余白、見える所。
 
 import std/unittest
+import nim_unicode_width
 import nim_terminal_core/[geometry, widget, layout]
 
 proc leaf(c = fill()): Widget = newWidget().sized(c)
 
 proc measured(w, h: int): Widget =
-  result = newWidget(behavior = Behavior(measure: proc(available: Size): Size = size(w, h)))
+  result = newWidget(behavior = Behavior(measure: proc(available: Size, opts: WidthOptions): Size = size(w, h)))
   result.constraint = natural()
 
 suite "layout":

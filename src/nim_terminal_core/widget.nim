@@ -3,6 +3,7 @@
 ## 置き方 (縦・横・重ね・格子・任意) と大きさの制約は木の側が持ち、計算は layout が行う (ADR-TC-0001 の L-*)。
 
 import std/options
+import nim_unicode_width
 import ./[geometry, canvas, theme, event]
 
 type
@@ -29,8 +30,8 @@ type
       ## 自分を描く。子は枠組みが後から描く
     handle*: proc(e: Event): bool {.closure, raises: [].}
       ## 事象を受ける。扱ったら true (親へは渡らない)
-    measure*: proc(available: Size): Size {.closure, raises: [].}
-      ## 望む大きさ (余白 margin を除く)。ckNatural の子のときに使う
+    measure*: proc(available: Size, opts: WidthOptions): Size {.closure, raises: [].}
+      ## 望む大きさ (余白 margin を除く)。ckNatural の子のときに使う。opts は文字の幅の数え方
     arrange*: proc(content: Rect): Rect {.closure, raises: [].}
       ## arCustom: 子を place で置き、子を切り抜く矩形を返す
 
@@ -155,17 +156,17 @@ proc named*(w: Widget, id: string): Widget {.raises: [].} =
   w.id = id
   w
 
-proc measure*(w: Widget, available: Size): Size {.raises: [].} =
+proc measure*(w: Widget, available: Size, opts = WidthOptions()): Size {.raises: [].} =
   ## 望む大きさ (margin を除く)。behavior.measure が無ければ、並べる子の大きさの和と padding。
   if not w.visible: return Size()
-  if not w.behavior.measure.isNil: return w.behavior.measure(available)
+  if not w.behavior.measure.isNil: return w.behavior.measure(available, opts)
   var inner = Size()
   let room = size(available.width - w.padding.horizontal, available.height - w.padding.vertical)
   var shownCount = 0
   for c in w.children:
     if not c.visible: continue
     inc shownCount
-    let m = c.measure(room)
+    let m = c.measure(room, opts)
     let mw = m.width + c.margin.horizontal
     let mh = m.height + c.margin.vertical
     case w.arrangement

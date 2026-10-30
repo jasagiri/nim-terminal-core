@@ -1,6 +1,7 @@
 ## ウィジェットの木を矩形に割り付ける。規則は ADR-TC-0001 の L-1〜L-10。I/O を持たない。
 
 import std/algorithm
+import nim_unicode_width
 import ./[geometry, widget]
 
 proc solve*(total: int, constraints: openArray[Constraint], autos: openArray[int] = [],
@@ -64,20 +65,20 @@ proc solve*(total: int, constraints: openArray[Constraint], autos: openArray[int
     result.add (offset: min(at, total), size: sizes[i])
     at += sizes[i] + gap
 
-proc arrange(w: Widget, r, clip: Rect) {.raises: [].}
+proc arrange(w: Widget, r, clip: Rect, opts: WidthOptions) {.raises: [].}
 
-proc line(w: Widget, content, clip: Rect, vertical: bool) =
+proc line(w: Widget, content, clip: Rect, vertical: bool, opts: WidthOptions) =
   ## L-1、L-7、L-8: 見える子を並びの向きに割り付け、交わる向きは content の全体
   var shownKids: seq[Widget]
   for c in w.children:
     if c.visible: shownKids.add c
-    else: arrange(c, Rect(), Rect())
+    else: arrange(c, Rect(), Rect(), opts)
   var cs: seq[Constraint]
   var autos: seq[int]
   for c in shownKids:
     cs.add c.constraint
     if c.constraint.kind == ckNatural:
-      let m = c.measure(content.size)
+      let m = c.measure(content.size, opts)
       autos.add(if vertical: m.height + c.margin.vertical else: m.width + c.margin.horizontal)
     else: autos.add 0
   let total = if vertical: content.height else: content.width
@@ -86,30 +87,30 @@ proc line(w: Widget, content, clip: Rect, vertical: bool) =
     let slot =
       if vertical: rect(content.x, content.y + parts[i].offset, content.width, parts[i].size)
       else: rect(content.x + parts[i].offset, content.y, parts[i].size, content.height)
-    arrange(c, slot.inset(c.margin), clip)
+    arrange(c, slot.inset(c.margin), clip, opts)
 
-proc arrange(w: Widget, r, clip: Rect) {.raises: [].} =
+proc arrange(w: Widget, r, clip: Rect, opts: WidthOptions) {.raises: [].} =
   let shown = if w.visible: intersect(r, clip) else: Rect()
   w.setLayoutResult(if w.visible: r else: Rect(), shown)
   let content = r.inset(w.padding)
   var kidsClip = intersect(shown, content)
   if not w.visible:
-    for c in w.children: arrange(c, Rect(), Rect())
+    for c in w.children: arrange(c, Rect(), Rect(), opts)
     return
   case w.arrangement
   of arNone:
-    for c in w.children: arrange(c, Rect(), Rect())
-  of arVertical: w.line(content, kidsClip, true)
-  of arHorizontal: w.line(content, kidsClip, false)
+    for c in w.children: arrange(c, Rect(), Rect(), opts)
+  of arVertical: w.line(content, kidsClip, true, opts)
+  of arHorizontal: w.line(content, kidsClip, false, opts)
   of arStack:   # L-6
-    for c in w.children: arrange(c, content.inset(c.margin), kidsClip)
+    for c in w.children: arrange(c, content.inset(c.margin), kidsClip, opts)
   of arGrid:    # L-5
     let rowParts = solve(content.height, w.rows, [], w.gap)
     let colParts = solve(content.width, w.columns, [], w.gap)
     var k = 0
     for c in w.children:
       if not c.visible:
-        arrange(c, Rect(), Rect())
+        arrange(c, Rect(), Rect(), opts)
         continue
       let row = if w.columns.len > 0: k div w.columns.len else: w.rows.len
       let col = if w.columns.len > 0: k mod w.columns.len else: 0
@@ -117,17 +118,17 @@ proc arrange(w: Widget, r, clip: Rect) {.raises: [].} =
       if row < w.rows.len:
         let cell = rect(content.x + colParts[col].offset, content.y + rowParts[row].offset,
                         colParts[col].size, rowParts[row].size)
-        arrange(c, cell.inset(c.margin), kidsClip)
-      else: arrange(c, Rect(), Rect())
+        arrange(c, cell.inset(c.margin), kidsClip, opts)
+      else: arrange(c, Rect(), Rect(), opts)
   of arCustom:
     if w.behavior.arrange.isNil:
-      for c in w.children: arrange(c, Rect(), Rect())
+      for c in w.children: arrange(c, Rect(), Rect(), opts)
     else:
       for c in w.children: c.place(Rect())   # 置かれなかった子は見えない (前の所に残さない)
       kidsClip = intersect(shown, w.behavior.arrange(content))
-      for c in w.children: arrange(c, if c.visible: c.rect else: Rect(), kidsClip)
+      for c in w.children: arrange(c, if c.visible: c.rect else: Rect(), kidsClip, opts)
 
-proc layout*(root: Widget, area: Rect) {.raises: [].} =
+proc layout*(root: Widget, area: Rect, opts = WidthOptions()) {.raises: [].} =
   ## L-9: 木の全体を area に割り付ける。同じ木と大きさなら、何度呼んでも同じ結果。
   ## L-10: 各ウィジェットの見える所は、置いた所と、親の子を切り抜く矩形 (padding の内側) の重なり。
-  arrange(root, area, area)
+  arrange(root, area, area, opts)

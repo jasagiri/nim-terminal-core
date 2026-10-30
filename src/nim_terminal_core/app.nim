@@ -153,8 +153,8 @@ proc resize*(app: App, width, height: int) {.raises: [].} =
   app.height = max(height, 0)
 
 proc arrangeAll(app: App) =
-  layout(app.root, rect(0, 0, app.width, app.height))
-  for l in app.layers: layout(l.widget, l.placeAt(app.size))
+  layout(app.root, rect(0, 0, app.width, app.height), app.widthOptions)
+  for l in app.layers: layout(l.widget, l.placeAt(app.size), app.widthOptions)
 
 proc renderTree(app: App, s: Surface, w: Widget, cursor: var Option[tuple[x, y: int]]) =
   if not w.visible or w.shown.isEmpty: return
