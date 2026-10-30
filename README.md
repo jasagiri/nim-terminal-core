@@ -34,5 +34,5 @@ if ended.isFailure: quit("example: " & ended.error, 2)
 - 規則は ADR-TC-0001 (枠組み) と ADR-TC-0002 (行の編集とウィジェット)。前の版の `specs/*.feature` との対応は `docs/spec/previous-features.md`。
 - 例は `examples/` (hello、form、files、progress)。`nim examples` で `build/` に組む。
 - 依存: `../nim-terminal-io`、`../nim-unicode-width`、`../../nim-outcome` (nim.cfg で source から)。試験の擬似端末は `../nim-libplatform`。`nim test` でテスト。
-- 作り直す前の中身 (端末の層、アクター、エージェント、9P、計測) は jj の履歴の「chore: keep the work in progress before the rebuild」にある。アクターは nim-tui-actors に切り出した。エージェント・計測は、別のパッケージに切り出す予定。
-- ライセンスは MIT。
+- 作り直す前の中身 (端末の層、アクター、エージェント、9P、計測) は jj の履歴の「chore: keep the work in progress before the rebuild」にある。アクターは nim-tui-actors に切り出した。エージェントは nim-tui-agents、計測は nim-tui-metrics に切り出した。
+- ライセンスは Apache-2.0 (`LICENSE`、`NOTICE`)。2026 年の作り直しより前の版 (nim-libterminal の名で公開) は MIT。
