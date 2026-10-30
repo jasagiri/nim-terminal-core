@@ -20,6 +20,7 @@ type
     placeAt: proc(screen: Size): Rect {.closure, raises: [].}
     mode: LayerMode
     savedFocus: Widget
+    onClosed: proc() {.closure, raises: [].}
 
   Timer* = ref object
     interval: int
@@ -109,10 +110,11 @@ proc ensureFocus(app: App) =
     app.setFocus(if order.len > 0: order[0] else: nil)
 
 proc openLayer*(app: App, w: Widget, placeAt: proc(screen: Size): Rect {.closure, raises: [].},
-                mode = lmModal) {.raises: [].} =
+                mode = lmModal, onClosed: proc() {.closure, raises: [].} = nil) {.raises: [].} =
   ## w を今の画面の上に開く。置き場所は画面の大きさから placeAt が決める (大きさが変わると決め直す)。
   ## 開く前のフォーカスを覚え、層の最初の受けられるウィジェットにフォーカスを移す。
-  app.layers.add Layer(widget: w, placeAt: placeAt, mode: mode, savedFocus: app.focus)
+  ## onClosed は、どの道で閉じても (closeLayer、lmPopup の外を押す) 閉じた後に 1 度呼ぶ。
+  app.layers.add Layer(widget: w, placeAt: placeAt, mode: mode, savedFocus: app.focus, onClosed: onClosed)
   app.capture = nil
   var order: seq[Widget]
   focusables(w, order)
@@ -123,11 +125,13 @@ proc closeLayer*(app: App, w: Widget) {.raises: [].} =
   for i, l in app.layers:
     if l.widget == w:
       let saved = l.savedFocus
+      let onClosed = l.onClosed
       app.layers.delete(i)
       if app.focus.isNil or w.isAncestorOf(app.focus): app.focus = nil
       app.capture = nil
       if not saved.isNil and saved.usable and app.layerRoot.isAncestorOf(saved): app.setFocus(saved)
       else: app.ensureFocus()
+      if not onClosed.isNil: onClosed()
       return
 
 proc isOpen*(app: App, w: Widget): bool {.raises: [].} =

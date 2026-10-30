@@ -3,6 +3,7 @@
 
 import nim_unicode_width
 import ../[geometry, canvas, theme, event, widget]
+import ./rows
 
 type
   ListItem* = object
@@ -32,17 +33,12 @@ proc item*(text: string, spans: seq[Slice[int]] = @[]): ListItem {.raises: [].} 
 
 proc follow(l: ListBox) =
   ## W-11: 選んでいる項目が見えるよう、見える範囲を動かす
-  if l.selected < 0: return
-  if l.selected < l.top: l.top = l.selected
-  if l.rows > 0 and l.selected >= l.top + l.rows: l.top = l.selected - l.rows + 1
-
-proc clampTop(l: ListBox) =
-  l.top = max(0, min(l.top, max(0, l.items.len - max(l.rows, 1))))
+  l.top = followTop(l.top, l.selected, l.rows, l.items.len)
 
 proc select*(l: ListBox, index: int) {.raises: [].} =
   ## W-11: 選ぶ項目を index (範囲の外は端) にし、見えるようにする。変わったら onSelect を呼ぶ。
   let before = l.selected
-  l.selected = if l.items.len == 0: -1 else: max(0, min(index, l.items.high))
+  l.selected = clampIndex(index, l.items.len)
   l.follow()
   if l.selected != before and l.selected >= 0 and not l.onSelect.isNil: l.onSelect(l.selected)
 
@@ -83,9 +79,10 @@ proc newListBox*(items: seq[ListItem] = @[]): ListBox {.raises: [].} =
   let l = ListBox(selected: -1)
   l.widget = newWidget(focusable = true)
   l.widget.behavior.render = proc(c: Canvas, theme: Theme, focused: bool) =
-    l.rows = c.height
-    l.follow()
-    l.clampTop()
+    if c.height != l.rows:          # 行の数が変わったときだけ選びに寄せる (ホイールで送った所を戻さない)
+      l.rows = c.height
+      l.follow()
+    else: l.top = clampTop(l.top, l.rows, l.items.len)
     for row in 0 ..< c.height:
       let i = l.top + row
       if i >= l.items.len: break
@@ -121,7 +118,7 @@ proc newListBox*(items: seq[ListItem] = @[]): ListBox {.raises: [].} =
       if e.wheel == maWheelUp: l.top -= WheelStep
       elif e.wheel == maWheelDown: l.top += WheelStep
       else: return false
-      l.clampTop()
+      l.top = clampTop(l.top, l.rows, l.items.len)
       true
     else: false
   l.widget.behavior.measure = proc(available: Size, opts: WidthOptions): Size =

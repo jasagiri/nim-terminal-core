@@ -32,7 +32,7 @@ type
       ## 事象を受ける。扱ったら true (親へは渡らない)
     measure*: proc(available: Size, opts: WidthOptions): Size {.closure, raises: [].}
       ## 望む大きさ (余白 margin を除く)。ckNatural の子のときに使う。opts は文字の幅の数え方
-    arrange*: proc(content: Rect): Rect {.closure, raises: [].}
+    arrange*: proc(content: Rect, opts: WidthOptions): Rect {.closure, raises: [].}
       ## arCustom: 子を place で置き、子を切り抜く矩形を返す
 
   Widget* = ref object

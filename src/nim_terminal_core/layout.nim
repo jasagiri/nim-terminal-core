@@ -125,7 +125,7 @@ proc arrange(w: Widget, r, clip: Rect, opts: WidthOptions) {.raises: [].} =
       for c in w.children: arrange(c, Rect(), Rect(), opts)
     else:
       for c in w.children: c.place(Rect())   # 置かれなかった子は見えない (前の所に残さない)
-      kidsClip = intersect(shown, w.behavior.arrange(content))
+      kidsClip = intersect(shown, w.behavior.arrange(content, opts))
       for c in w.children: arrange(c, if c.visible: c.rect else: Rect(), kidsClip, opts)
 
 proc layout*(root: Widget, area: Rect, opts = WidthOptions()) {.raises: [].} =

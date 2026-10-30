@@ -4,7 +4,7 @@
 import std/options
 import nim_unicode_width
 import nim_terminal_io/screen
-import ./geometry
+import ./[geometry, theme]
 
 export screen   # Style・Color と、描いた Screen を読む手続き
 
@@ -99,3 +99,23 @@ proc fit*(c: Canvas, text: string, width: int, ellipsis = "…"): string {.raise
     result.add text[cl.bytes]
     used += w
   if room >= 0: result.add ellipsis
+
+proc box*(c: Canvas, r: Rect, border: BorderChars, style = Style(), title = "", titleStyle = Style()) {.raises: [].} =
+  ## C-7: r (c の中の位置) の外周に枠を描き、内を style の空白で埋める。title は上の辺の左から 2 列目に、
+  ## 幅に収めて描く。2 × 2 より小さければ埋めるだけ。
+  c.fill(r, style)
+  if r.width < 2 or r.height < 2: return
+  let right = r.x + r.width - 1
+  let bottom = r.y + r.height - 1
+  for x in r.x + 1 ..< right:
+    discard c.put(x, r.y, border.horizontal, style)       # Why discard: 1 列ずつ
+    discard c.put(x, bottom, border.horizontal, style)
+  for y in r.y + 1 ..< bottom:
+    discard c.put(r.x, y, border.vertical, style)
+    discard c.put(right, y, border.vertical, style)
+  discard c.put(r.x, r.y, border.topLeft, style)
+  discard c.put(right, r.y, border.topRight, style)
+  discard c.put(r.x, bottom, border.bottomLeft, style)
+  discard c.put(right, bottom, border.bottomRight, style)
+  if title.len > 0 and r.width > 4:
+    discard c.put(r.x + 2, r.y, c.fit(" " & title & " ", r.width - 4), titleStyle)

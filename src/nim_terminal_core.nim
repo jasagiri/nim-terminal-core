@@ -3,8 +3,10 @@
 
 import nim_terminal_core/[geometry, canvas, theme, event, widget, layout, binding, shortcuts, app, lineedit]
 export geometry, canvas, theme, event, widget, layout, binding, shortcuts, app, lineedit
-import nim_terminal_core/widgets/[label, button, checkbox, textinput, listbox, progressbar]
-export label, button, checkbox, textinput, listbox, progressbar
+import nim_terminal_core/widgets/[label, button, checkbox, textinput, listbox, progressbar, scrollview, dialog, menu,
+                                  tabview, treeview, tableview]
+export label, button, checkbox, textinput, listbox, progressbar, scrollview, dialog, menu, tabview, treeview,
+       tableview
 
 import nim_outcome
 export nim_outcome   # 失敗は Outcome で返す (shortcuts.add、app.run)

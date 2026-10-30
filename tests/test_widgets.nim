@@ -207,6 +207,7 @@ suite "listbox":
     app.feed(mouse(maWheelDown, 0, 0, mbNone), 0)
     check l.top == 3 and l.selected == 2
     discard app.draw()
+    check l.top == 3                  # 描いても、送った所に留まる
     app.feed(key(kEnter), 0)
     check activated == @[2, 2]
 

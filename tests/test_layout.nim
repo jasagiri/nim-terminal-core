@@ -106,7 +106,7 @@ suite "layout":
   test "TC-L-10 Given a child placed partly outside its parent's padding When laid out Then it is shown only inside the parent":
     let kid = newWidget()
     let parent = newWidget(arrangement = arCustom)
-    parent.behavior.arrange = proc(content: Rect): Rect =
+    parent.behavior.arrange = proc(content: Rect, opts: WidthOptions): Rect =
       kid.place(rect(content.x - 3, content.y, 10, 2))
       content
     parent.add kid
@@ -119,7 +119,7 @@ suite "layout":
     let placed = newWidget()
     let left = newWidget()
     let parent = newWidget(arrangement = arCustom)
-    parent.behavior.arrange = proc(content: Rect): Rect =
+    parent.behavior.arrange = proc(content: Rect, opts: WidthOptions): Rect =
       placed.place(content)
       content
     parent.add placed
