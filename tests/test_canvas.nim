@@ -3,7 +3,7 @@
 import std/[unittest, options]
 import nim_unicode_width
 import nim_terminal_io/screen
-import nim_terminal_core/[geometry, canvas]
+import nim_terminal_core/[geometry, canvas, theme]
 
 proc row(s: Surface, y: int): string =
   for x in 0 ..< s.screen.width: result.add s.screen.cellText(x, y)
@@ -75,3 +75,15 @@ suite "canvas":
   test "TC-C-1 Given ambiguous width as wide When written Then the canvas uses the surface's options":
     let s = newSurface(4, 1, WidthOptions(ambiguousWide: true))
     check s.canvas.put(0, 0, "─") == 2
+
+  test "TC-C-7 Given a rect When a box is drawn Then the border, the filled inside and the fitted title are drawn, and a tiny rect is only filled":
+    let s = newSurface(10, 4)
+    let c = s.canvas
+    c.box(rect(0, 0, 10, 4), LightBorder, Style(), "題名が長い題名", Style(bold: true))
+    check s.row(0) == "┌─ 題名…─┐"        # " 題名が長い題名 " を 6 列に収める (C-6)
+    check s.row(1) == "│        │"
+    check s.row(3) == "└────────┘"
+    check s.screen.styleAt(3, 0).bold
+    let t = newSurface(3, 1)
+    t.canvas.box(rect(0, 0, 3, 1), LightBorder, Style(reverse: true))
+    check t.row(0) == "   " and t.screen.styleAt(1, 0).reverse

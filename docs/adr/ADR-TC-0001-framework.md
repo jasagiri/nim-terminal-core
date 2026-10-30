@@ -6,7 +6,7 @@
 nim-terminal-core は端末の中で動く道具 (lpick、マルチプレクサ、ファイルの一覧、シェルの対話の画面) のための TUI の部品として作られていたが、監査 (nim-terminal-io/docs/audit-2026-10-29-terminal-ui.md) でそのままでは動かなかった。ウィジェットの作り方は 3 通り (継承と method、登録表と pointer、状態の型) が混ざり、データの結びつけは pointer と cast で、端末の層は nim-terminal-io と重なっていた。代表の決定 (2026-10-30) で、TUI の枠組みとして作り直す。端末と話すこと (raw、キーの解読、差分の描画) は nim-terminal-io が持ち、ここでは持たない。
 
 ## 決定
-module は geometry・canvas・theme・event・widget・layout・binding・shortcuts・app。ウィジェットは委譲で組む: `Widget` は型を継がず、描画・事象・大きさ・子の置き方を `Behavior` (手続きの束) に委ね、具体のウィジェット (Button など) は自分の状態を持つ ref object で、手続きの束がそれを閉じ込める。`ref object of` と method は使わない。規則は次のとおりで、E テストは規則の番号 (`TC-<字>-<番号>`) を名に持つ。
+module は geometry・canvas・theme・event・widget・layout・binding・shortcuts・app と、行の編集 (lineedit) とウィジェット (ADR-TC-0002)。ウィジェットは委譲で組む: `Widget` は型を継がず、描画・事象・大きさ・子の置き方を `Behavior` (手続きの束) に委ね、具体のウィジェット (Button など) は自分の状態を持つ ref object で、手続きの束がそれを閉じ込める。`ref object of` と method は使わない。規則は次のとおりで、E テストは規則の番号 (`TC-<字>-<番号>`) を名に持つ。
 
 ### C: 画布
 - **C-1** `put` は書記素クラスタごとに、原点からの位置に書く。切り抜きの外には書かず、切り抜きの端で切れた幅 2 のクラスタは、見える半分を空白にする。幅は Surface の `WidthOptions` (曖昧な幅) で数える。
@@ -15,6 +15,7 @@ module は geometry・canvas・theme・event・widget・layout・binding・short
 - **C-4** `sub` は、矩形を原点とし、切り抜きを矩形と元の切り抜きの重なりにした画布。
 - **C-5** `setCursor` は、切り抜きの中なら端末のカーソルの位置を置く。後から置いたものが勝つ。
 - **C-6** `fit` は、幅に収まるようクラスタの境で切り、切ったときは末尾を `…` にする (それも入らなければ付けない)。
+- **C-7** `box` は、矩形の外周に枠を描いて内を埋め、題を上の辺の 2 列目から幅に収めて (C-6) 描く。2 × 2 より小さければ埋めるだけ。枠の字は Theme の `border` (罫線は曖昧な幅なので、曖昧な幅を 2 とする端末では `AsciiBorder` を使う)。
 
 ### L: 割り付け
 - **L-1** 縦 (`vbox`)・横 (`hbox`) の箱は、見える子を順に並びの向きへ割り付け、子の間を `gap` だけあける。交わる向きは内側 (padding の内) の全体。
@@ -61,6 +62,9 @@ module は geometry・canvas・theme・event・widget・layout・binding・short
 - **A-4** `every` のタイマーは、時が来るたびに 1 度動く。遅れても取り返して何度も動かさない。`cancel` すると止まる。
 - **A-5** 誰も扱わなかった Ctrl+Z と SIGTSTP では、端末を戻して止まり、続けられたら端末を戻し直して全部を描き直す。
 - **A-6** 端末のカーソルは、フォーカスのウィジェットが描くときに置いた所に出す (日本語の入力の変換の窓がそこに出る)。置かなければ隠す。
+- **A-7** `watchFd` で見張った fd が読めるようになるたびに、run はその手続きを呼ぶ。`unwatchFd` の後は呼ばない (呼ぶ途中に外したものも)。
+- マウスは、前に描いた画面 (前の `draw` の割り付け) に当てる。利用者が見ている画面と同じ。
+- 層は `openLayer` の `onClosed` で、どの道で閉じても (closeLayer、lmPopup の外を押す) 閉じた後に 1 度知らせる。
 
 ## 採らなかった案
 - **継承と method でウィジェットを作る** (前の版): 開発の規則は委譲を求める。手続きの束なら、ウィジェットの種類を足すのに枠組みの型を変えない。

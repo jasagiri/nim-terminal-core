@@ -59,7 +59,7 @@ proc newTextInput*(text = "", placeholder = ""): TextInput {.raises: [].} =
   ## W-9: キーは T-3 で編集し、Enter で onSubmit を呼ぶ。押した列にカーソルを動かす (T-5)。
   let t = TextInput(edit: initLineEdit(text), placeholder: placeholder)
   t.widget = newWidget(focusable = true)
-  t.widget.constraint = fixed(1)
+  t.widget.constraint = natural()     # 縦の箱では 1 行。横の箱では呼び手が幅を決める (fill など)
   t.widget.behavior.render = proc(c: Canvas, theme: Theme, focused: bool) =
     let opts = c.widthOptions
     t.follow(c.width, opts)

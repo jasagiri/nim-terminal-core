@@ -57,7 +57,7 @@ proc newProgressBar*(total: int, startMs: int64, title = ""): ProgressBar {.rais
   let p = ProgressBar(title: title, total: total, startMs: startMs, lastMs: startMs, showEta: true,
                       filled: "█", empty: "░")
   p.widget = newWidget()
-  p.widget.constraint = fixed(1)
+  p.widget.constraint = natural()     # 縦の箱では 1 行、横の箱では使える幅
   p.widget.behavior.render = proc(c: Canvas, theme: Theme, focused: bool) =
     var x = 0
     if p.title.len > 0: x += c.put(0, 0, p.title & " ", theme[roTitle])

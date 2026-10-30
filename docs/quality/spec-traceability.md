@@ -1,0 +1,95 @@
+# 仕様網羅 (G1)
+
+仕様は ADR-TC-0001 (C・L・E・K・B・A) と ADR-TC-0002 (T・W) の番号つきの規則。テストの名は `TC-<字>-<番号>` から始まる。A-1・A-2・A-5・A-7 は擬似端末の上で試験用のアプリ (`tests/run_app.nim`) を動かし、端末に書かれたバイトを nim-terminal-io の `vt` で読み戻す。A-5 はジョブ制御をする起動役 (`tests/launcher.nim`) の下で動かす (セッションの長の下のグループは孤児になり、カーネルが SIGTSTP を捨てるため)。
+
+**85 / 85** (未対応 0)
+
+| 規則 | テスト |
+|---|---|
+| B-1 | `tests/test_binding_shortcuts.nim` |
+| B-2 | `tests/test_binding_shortcuts.nim` |
+| B-3 | `tests/test_binding_shortcuts.nim` |
+| B-4 | `tests/test_binding_shortcuts.nim` |
+| K-1 | `tests/test_binding_shortcuts.nim` |
+| K-2 | `tests/test_binding_shortcuts.nim` |
+| K-3 | `tests/test_binding_shortcuts.nim` |
+| K-4 | `tests/test_binding_shortcuts.nim` |
+| K-5 | `tests/test_binding_shortcuts.nim` |
+| K-6 | `tests/test_binding_shortcuts.nim` |
+| C-1 | `tests/test_canvas.nim` |
+| C-2 | `tests/test_canvas.nim` |
+| C-3 | `tests/test_canvas.nim` |
+| C-4 | `tests/test_canvas.nim` |
+| C-5 | `tests/test_canvas.nim` |
+| C-6 | `tests/test_canvas.nim` |
+| C-7 | `tests/test_canvas.nim` |
+| E-1 | `tests/test_dispatch.nim` |
+| E-2 | `tests/test_dispatch.nim` |
+| E-3 | `tests/test_dispatch.nim` |
+| E-4 | `tests/test_dispatch.nim` |
+| E-5 | `tests/test_dispatch.nim` |
+| E-6 | `tests/test_dispatch.nim` |
+| E-7 | `tests/test_dispatch.nim` |
+| E-8 | `tests/test_dispatch.nim` |
+| E-9 | `tests/test_dispatch.nim` |
+| E-10 | `tests/test_dispatch.nim` |
+| A-3 | `tests/test_dispatch.nim` |
+| A-6 | `tests/test_dispatch.nim` |
+| A-4 | `tests/test_dispatch.nim` |
+| L-1 | `tests/test_layout.nim` |
+| L-2 | `tests/test_layout.nim` |
+| L-3 | `tests/test_layout.nim` |
+| L-4 | `tests/test_layout.nim` |
+| L-5 | `tests/test_layout.nim` |
+| L-6 | `tests/test_layout.nim` |
+| L-7 | `tests/test_layout.nim` |
+| L-8 | `tests/test_layout.nim` |
+| L-9 | `tests/test_layout.nim` |
+| L-10 | `tests/test_layout.nim` |
+| T-1 | `tests/test_lineedit.nim` |
+| T-2 | `tests/test_lineedit.nim` |
+| T-3 | `tests/test_lineedit.nim` |
+| T-4 | `tests/test_lineedit.nim` |
+| T-5 | `tests/test_lineedit.nim` |
+| T-6 | `tests/test_lineedit.nim` |
+| A-1 | `tests/test_run.nim` |
+| A-7 | `tests/test_run.nim` |
+| A-2 | `tests/test_run.nim` |
+| A-5 | `tests/test_run.nim` |
+| W-1 | `tests/test_widgets.nim` |
+| W-2 | `tests/test_widgets.nim` |
+| W-3 | `tests/test_widgets.nim` |
+| W-4 | `tests/test_widgets.nim` |
+| W-5 | `tests/test_widgets.nim` |
+| W-6 | `tests/test_widgets.nim` |
+| W-7 | `tests/test_widgets.nim` |
+| W-8 | `tests/test_widgets.nim` |
+| W-9 | `tests/test_widgets.nim` |
+| W-10 | `tests/test_widgets.nim` |
+| W-11 | `tests/test_widgets.nim` |
+| W-12 | `tests/test_widgets.nim` |
+| W-13 | `tests/test_widgets.nim` |
+| W-14 | `tests/test_widgets.nim` |
+| W-15 | `tests/test_widgets.nim` |
+| W-16 | `tests/test_widgets.nim` |
+| W-17 | `tests/test_widgets2.nim` |
+| W-18 | `tests/test_widgets2.nim` |
+| W-19 | `tests/test_widgets2.nim` |
+| W-20 | `tests/test_widgets2.nim` |
+| W-21 | `tests/test_widgets2.nim` |
+| W-22 | `tests/test_widgets2.nim` |
+| W-23 | `tests/test_widgets2.nim` |
+| W-24 | `tests/test_widgets2.nim` |
+| W-25 | `tests/test_widgets2.nim` |
+| W-26 | `tests/test_widgets2.nim` |
+| W-27 | `tests/test_widgets2.nim` |
+| W-28 | `tests/test_widgets2.nim` |
+| W-29 | `tests/test_widgets2.nim` |
+| W-30 | `tests/test_widgets2.nim` |
+| W-31 | `tests/test_widgets2.nim` |
+| W-32 | `tests/test_widgets2.nim` |
+| W-33 | `tests/test_widgets2.nim` |
+| W-34 | `tests/test_widgets2.nim` |
+| W-35 | `tests/test_widgets2.nim` |
+
+前の版の `specs/*.feature` との対応は `docs/spec/previous-features.md`。
