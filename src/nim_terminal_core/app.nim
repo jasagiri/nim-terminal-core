@@ -2,7 +2,7 @@
 ## タイマー。`feed`・`draw`・`runDue` は I/O を持たず、`run` が端末とつなぐ。規則は ADR-TC-0001 の E-1〜E-10、
 ## A-1〜A-6。
 
-import std/[options, monotimes, posix, unicode]
+import std/[options, monotimes, times, posix, unicode]
 import nim_outcome
 import nim_unicode_width
 import nim_terminal_io/[tty, signals, keys, screen]
@@ -48,6 +48,8 @@ type
     suspendWanted: bool
     timers: seq[Timer]
     fdWatches: seq[FdWatch]
+    frames: int
+    lastDrawNanos: int64
 
   Ending* = object
     signal*: cint   ## SIGTERM などで終わったときの番号。quit で終わったときは 0
@@ -176,6 +178,7 @@ proc renderTree(app: App, s: Surface, w: Widget, cursor: var Option[tuple[x, y: 
 
 proc draw*(app: App): Surface {.raises: [].} =
   ## A-3: 割り付けてから、根、層の順に描く。端末のカーソルは、フォーカスのウィジェットが置いた所。
+  let started = getMonoTime()
   app.arrangeAll()
   app.ensureFocus()
   let s = newSurface(app.width, app.height, app.widthOptions)
@@ -183,7 +186,17 @@ proc draw*(app: App): Surface {.raises: [].} =
   app.renderTree(s, app.root, cursor)
   for l in app.layers: app.renderTree(s, l.widget, cursor)
   s.cursor = cursor
+  inc app.frames
+  app.lastDrawNanos = (getMonoTime() - started).inNanoseconds
   s
+
+proc frames*(app: App): int {.raises: [].} =
+  ## A-9: draw が描いた画面の数。
+  app.frames
+
+proc lastDrawMs*(app: App): float {.raises: [].} =
+  ## A-9: 最後の draw にかかった時間 (ミリ秒。割り付けと描画。端末へ書く時間は含まない)。
+  float(app.lastDrawNanos) / 1e6
 
 proc hit(w: Widget, x, y: int): Widget =
   ## 点 (x, y) の一番深いウィジェット。後の子が上。無効のウィジェットに当たれば nil (届けない。E-9)

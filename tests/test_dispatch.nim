@@ -1,6 +1,6 @@
 ## TC-E-*: キー・マウス・貼り付けの振り分け、フォーカス、層。TC-A-*: 描画、カーソル、タイマー。
 
-import std/[unittest, unicode, options, strutils]
+import std/[unittest, unicode, options, strutils, monotimes, times]
 import nim_terminal_core
 
 type Probe = ref object
@@ -248,6 +248,18 @@ suite "app":
     var row1 = ""
     for x in 0 ..< 10: row1.add s.screen.cellText(x, 1)
     check row1 == "..XYZ....."
+
+  test "TC-A-9 Given an app When it draws Then it counts the frames and keeps how long the last draw took":
+    let slow = newWidget(behavior = Behavior(render: proc(c: Canvas, t: Theme, f: bool) =
+      let until = getMonoTime() + initDuration(milliseconds = 3)
+      while getMonoTime() < until: discard))   # Why discard: 描くのに 3 ms かかるウィジェット
+    let app = newApp(slow)
+    app.resize(4, 1)
+    check app.frames == 0 and app.lastDrawMs == 0
+    discard app.draw()
+    discard app.draw()
+    check app.frames == 2
+    check app.lastDrawMs >= 3 and app.lastDrawMs < 1000
 
   test "TC-A-6 Given widgets that set the cursor When drawn Then only the focused widget's cursor is kept, and none when nothing is focused":
     proc cursorAt(x: int, focusable: bool): Widget =

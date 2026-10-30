@@ -64,6 +64,7 @@ module は geometry・canvas・theme・event・widget・layout・binding・short
 - **A-6** 端末のカーソルは、フォーカスのウィジェットが描くときに置いた所に出す (日本語の入力の変換の窓がそこに出る)。置かなければ隠す。
 - **A-7** `watchFd` で見張った fd が読めるようになるたびに、run はその手続きを呼ぶ。`unwatchFd` の後は呼ばない (呼ぶ途中に外したものも)。
 - **A-8** `nim_terminal_core/asyncloop` の `driveAsync` は、std/asyncdispatch の仕事 (fd を待つものと時計のもの) を run のループで回す: asyncdispatch のセレクタの fd を A-7 で見張って読めるたびに待たずに回し、待っている仕事がある間は 10 ms ごとにも回す。回す途中の例外 (不具合を除く) は `problems` に残す。既定の import (`nim_terminal_core`) は asyncdispatch を引き込まない。
+- **A-9** App は、`draw` が描いた画面の数 (`frames`) と、最後の `draw` にかかった時間 (`lastDrawMs`。割り付けと描画、端末へ書く時間は含まない) を持つ。計測 (nim-tui-metrics) が読む。
 - マウスは、前に描いた画面 (前の `draw` の割り付け) に当てる。利用者が見ている画面と同じ。
 - 層は `openLayer` の `onClosed` で、どの道で閉じても (closeLayer、lmPopup の外を押す) 閉じた後に 1 度知らせる。
 
