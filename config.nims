@@ -11,5 +11,8 @@ proc testsIn(dir: string): seq[string] =
   result.sort()
 
 task test, "Run every tests/test_*.nim":
+  # TC-A の E テストが擬似端末の上で起こす
+  exec "nim c --hints:off -o:build/run_app tests/run_app.nim"
+  exec "nim c --hints:off -o:build/launcher tests/launcher.nim"
   for t in testsIn("tests"):
     exec "nim c -r --hints:off " & quoteShell(t)

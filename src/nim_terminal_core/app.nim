@@ -22,6 +22,10 @@ type
     savedFocus: Widget
     onClosed: proc() {.closure, raises: [].}
 
+  FdWatch = object
+    fd: cint
+    onReadable: proc() {.closure, raises: [].}
+
   Timer* = ref object
     interval: int
     next: int64
@@ -43,6 +47,7 @@ type
     running: bool
     suspendWanted: bool
     timers: seq[Timer]
+    fdWatches: seq[FdWatch]
 
   Ending* = object
     signal*: cint   ## SIGTERM などで終わったときの番号。quit で終わったときは 0
@@ -304,6 +309,22 @@ proc runDue*(app: App, nowMs: int64) {.raises: [].} =
       t.action()
     inc i
 
+proc unwatchFdImpl(app: App, fd: cint) =
+  for i, w in app.fdWatches:
+    if w.fd == fd:
+      app.fdWatches.delete(i)
+      return
+
+proc watchFd*(app: App, fd: cint, onReadable: proc() {.closure, raises: [].}) {.raises: [].} =
+  ## A-7: run の間、fd が読めるようになるたびに onReadable を呼ぶ (読むのは onReadable。読み切らなければ
+  ## 次の回もすぐ呼ぶ)。同じ fd を見張り直すと、前のものを置き換える。
+  app.unwatchFdImpl(fd)
+  app.fdWatches.add FdWatch(fd: fd, onReadable: onReadable)
+
+proc unwatchFd*(app: App, fd: cint) {.raises: [].} =
+  ## A-7: 見張りをやめる (閉じる前に呼ぶ)。
+  app.unwatchFdImpl(fd)
+
 proc nextDue(app: App, nowMs: int64): int =
   result = -1
   for t in app.timers:
@@ -346,7 +367,10 @@ proc loop(app: App, t: Tty, watch: SignalWatch): Outcome[Ending] =
     ?app.frame(t, shown, cursorOn)
     let due = app.nextDue(nowMs())
     let wait = if keyRest.len > 0: (if due < 0: EscWaitMs else: min(due, EscWaitMs)) else: due
-    let ready = ?waitReadable([t.fd, watch.fd], wait)
+    var fds = @[t.fd, watch.fd]
+    let watched = app.fdWatches        # 呼ぶ途中で足し外しされても、この回は待った顔ぶれで
+    for w in watched: fds.add w.fd
+    let ready = ?waitReadable(fds, wait)
     var events: seq[KeyEvent]
     if not ready[0] and not ready[1] and keyRest.len > 0:
       events = flushPending(keyRest)              # 時間切れ: 単独の Esc (TIO K-8)
@@ -379,6 +403,12 @@ proc loop(app: App, t: Tty, watch: SignalWatch): Outcome[Ending] =
           cursorOn = false
         else:
           return success(Ending(signal: sig))
+    for i, w in watched:
+      if ready[2 + i]:
+        for now in app.fdWatches:
+          if now.fd == w.fd:          # まだ見張っているものだけ
+            w.onReadable()
+            break
     app.runDue(nowMs())
   success(Ending())
 
