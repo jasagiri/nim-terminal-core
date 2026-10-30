@@ -11,3 +11,4 @@ tests/**/*
 !tests/**/*.nim
 # A copy of Python Textual (its own repository) kept beside the code as a design reference
 textual/
+build/
