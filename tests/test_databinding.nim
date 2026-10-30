@@ -1,5 +1,5 @@
 # test_databinding.nim
-## データバインディングのテスト
+## Data binding tests
 
 import unittest
 import std/tables
@@ -10,93 +10,93 @@ import ../src/libterminal/databinding
 import ../src/libterminal/widget_base
 import ../src/libterminal/widgets
 
-suite "プロパティ値":
-  test "プロパティ値の作成と取得":
-    # 文字列プロパティ
+suite "Property values":
+  test "Property value creation and retrieval":
+    # String property
     let strValue = newPropertyValue("Hello")
     check(strValue.kind == StringProperty)
     check(strValue.asString() == "Hello")
     
-    # 整数プロパティ
+    # Integer property
     let intValue = newPropertyValue(42)
     check(intValue.kind == IntProperty)
     check(intValue.asInt() == 42)
     
-    # 浮動小数点プロパティ
+    # Floating point property
     let floatValue = newPropertyValue(3.14)
     check(floatValue.kind == FloatProperty)
     check(floatValue.asFloat() == 3.14)
     
-    # 真偽値プロパティ
+    # Boolean property
     let boolValue = newPropertyValue(true)
     check(boolValue.kind == BoolProperty)
     check(boolValue.asBool())
   
-  test "プロパティ値の変換":
-    # 文字列からの変換
+  test "Property value conversion":
+    # Conversion from string
     let strValue = newPropertyValue("42")
     check(strValue.asInt() == 42)
     check(strValue.asFloat() == 42.0)
-    check(strValue.asBool())  # 空でない文字列はtrue
+    check(strValue.asBool())  # Non-empty string is true
     
-    # 整数からの変換
+    # Conversion from integer
     let intValue = newPropertyValue(0)
     check(intValue.asString() == "0")
     check(intValue.asFloat() == 0.0)
-    check(not intValue.asBool())  # 0はfalse
+    check(not intValue.asBool())  # 0 is false
     
-    # 浮動小数点からの変換
+    # Conversion from floating point
     let floatValue = newPropertyValue(3.14)
     check(floatValue.asString() == "3.14")
     check(floatValue.asInt() == 3)
-    check(floatValue.asBool())  # 0以外はtrue
+    check(floatValue.asBool())  # Non-zero is true
     
-    # 真偽値からの変換
+    # Conversion from boolean
     let boolValue = newPropertyValue(false)
     check(boolValue.asString() == "false")
     check(boolValue.asInt() == 0)
     check(boolValue.asFloat() == 0.0)
 
-suite "バインド可能プロパティ":
-  test "バインド可能プロパティの作成と値の取得設定":
-    # 文字列プロパティの作成
+suite "Bindable properties":
+  test "Bindable property creation and value get/set":
+    # Create string property
     let textProp = newStringProperty("text")
     check(textProp.name == "text")
     check(textProp.value.kind == StringProperty)
-    check(textProp.value.asString() == "")  # 初期値は空文字列
+    check(textProp.value.asString() == "")  # Initial value is empty string
     
-    # 値の設定
+    # Set value
     textProp.setValue(newPropertyValue("Hello"))
     check(textProp.getValue().asString() == "Hello")
     
-    # 整数プロパティ
+    # Integer property
     let countProp = newIntProperty("count")
     check(countProp.name == "count")
     check(countProp.value.kind == IntProperty)
-    check(countProp.value.asInt() == 0)  # 初期値は0
+    check(countProp.value.asInt() == 0)  # Initial value is 0
     
     countProp.setValue(newPropertyValue(5))
     check(countProp.getValue().asInt() == 5)
     
-    # 真偽値プロパティ
+    # Boolean property
     let enabledProp = newBoolProperty("enabled")
     check(enabledProp.name == "enabled")
     check(enabledProp.value.kind == BoolProperty)
-    check(not enabledProp.getValue().asBool())  # 初期値はfalse
+    check(not enabledProp.getValue().asBool())  # Initial value is false
     
     enabledProp.setValue(newPropertyValue(true))
     check(enabledProp.getValue().asBool())
 
-  test "プロパティのアクセサ":
+  test "Property accessors":
     var getterCalled = false
     var setterCalled = false
     var notifierCalled = false
     var storedValue = newPropertyValue("")
     
-    # アクセサ関数を持つプロパティ
+    # Property with accessor functions
     let prop = newStringProperty("test")
     
-    # アクセサの設定
+    # Set accessors
     prop.setAccessors(
       getter = proc(): PropertyValue =
         getterCalled = true
@@ -110,111 +110,111 @@ suite "バインド可能プロパティ":
         notifierCalled = true
     )
     
-    # ゲッターのテスト
+    # Test getter
     discard prop.getValue()
     check(getterCalled)
     
-    # セッターのテスト
+    # Test setter
     prop.setValue(newPropertyValue("Updated"))
     check(setterCalled)
     
-    # 値が更新されたことを確認 (storedValueはセッターによって更新されているはず)
+    # Verify value was updated (storedValue should have been updated by setter)
     getterCalled = false
     
     let value = prop.getValue()
     check(getterCalled)
     check(value.asString() == "Updated")
     
-    # 通知のテスト
+    # Test notification
     notifierCalled = false
     prop.notifyValueChanged()
     check(notifierCalled)
 
-suite "バインディング":
-  test "一方向バインディング":
-    # ソースプロパティ
+suite "Binding":
+  test "One-way binding":
+    # Source property
     let source = newStringProperty("source")
     source.setValue(newPropertyValue("Initial Value"))
     
-    # ターゲットプロパティ
+    # Target property
     let target = newStringProperty("target")
     
-    # 一方向バインディングを作成
+    # Create one-way binding
     let binding = newBinding(source, target, OneWayToTarget)
     
-    # 初期値が反映されることを確認
+    # Verify initial value is reflected
     check(target.getValue().asString() == "Initial Value")
     
-    # ソースを変更するとターゲットに反映される
+    # Changing source is reflected to target
     source.setValue(newPropertyValue("Updated Source"))
     source.notifyValueChanged()
     
     check(target.getValue().asString() == "Updated Source")
     
-    # ターゲットを変更してもソースには反映されない
+    # Changing target is not reflected to source
     target.setValue(newPropertyValue("Updated Target"))
     target.notifyValueChanged()
     
-    check(source.getValue().asString() == "Updated Source")  # 変化なし
+    check(source.getValue().asString() == "Updated Source")  # No change
 
-  test "双方向バインディング":
-    # ソースプロパティ
+  test "Two-way binding":
+    # Source property
     let source = newIntProperty("source")
     source.setValue(newPropertyValue(10))
     
-    # ターゲットプロパティ
+    # Target property
     let target = newIntProperty("target")
     
-    # 双方向バインディングを作成
+    # Create two-way binding
     let binding = newBinding(source, target, TwoWay)
     
-    # 初期値が反映されることを確認
+    # Verify initial value is reflected
     check(target.getValue().asInt() == 10)
     
-    # ソースを変更するとターゲットに反映される
+    # Changing source is reflected to target
     source.setValue(newPropertyValue(20))
     source.notifyValueChanged()
     
     check(target.getValue().asInt() == 20)
     
-    # ターゲットを変更するとソースにも反映される
+    # Changing target is also reflected to source
     target.setValue(newPropertyValue(30))
     target.notifyValueChanged()
     
     check(source.getValue().asInt() == 30)
 
-  test "値コンバータ付きバインディング":
-    # ソースプロパティ（整数）
+  test "Binding with value converter":
+    # Source property (integer)
     let source = newIntProperty("source")
     source.setValue(newPropertyValue(42))
     
-    # ターゲットプロパティ（文字列）
+    # Target property (string)
     let target = newStringProperty("target")
     
-    # 整数→文字列のコンバータ
+    # Integer to string converter
     proc intToStringConverter(value: PropertyValue): PropertyValue =
       let intValue = value.asInt()
       return newPropertyValue($intValue & " items")
     
-    # コンバータ付きの一方向バインディングを作成
+    # Create one-way binding with converter
     let binding = newBinding(source, target, OneWayToTarget, intToStringConverter)
     
-    # 初期値が変換されて反映されることを確認
+    # Verify initial value is converted and reflected
     check(target.getValue().asString() == "42 items")
     
-    # ソースを変更するとターゲットに変換されて反映される
+    # Changing source is converted and reflected to target
     source.setValue(newPropertyValue(100))
     source.notifyValueChanged()
     
     check(target.getValue().asString() == "100 items")
 
-suite "データコンテキスト":
-  test "データコンテキストの作成と取得":
+suite "Data context":
+  test "Data context creation and retrieval":
     let context = newDataContext()
     check(context != nil)
     check(context.properties.len == 0)
     
-    # プロパティの追加
+    # Add properties
     let nameProp = newStringProperty("name")
     nameProp.setValue(newPropertyValue("John"))
     
@@ -228,7 +228,7 @@ suite "データコンテキスト":
     check(context.properties.hasKey("name"))
     check(context.properties.hasKey("age"))
     
-    # プロパティの取得
+    # Get properties
     let nameResult = context.getProperty("name")
     check(nameResult.isSome)
     check(nameResult.get().getValue().asString() == "John")
@@ -237,23 +237,23 @@ suite "データコンテキスト":
     check(ageResult.isSome)
     check(ageResult.get().getValue().asInt() == 30)
     
-    # 存在しないプロパティ
+    # Non-existent property
     check(context.getProperty("unknown").isNone)
     
-    # プロパティの更新
+    # Update property
     context.setProperty("name", newPropertyValue("Jane"))
     let updatedName = context.getProperty("name")
     check(updatedName.isSome)
     check(updatedName.get().getValue().asString() == "Jane")
 
-suite "バインディングマネージャ":
-  test "バインディングマネージャの作成と管理":
+suite "Binding manager":
+  test "Binding manager creation and management":
     let manager = newBindingManager()
     check(manager != nil)
     check(manager.bindings.len == 0)
     check(manager.contexts.len == 0)
     
-    # データコンテキストの追加
+    # Add data context
     let userContext = newDataContext()
     let nameProp = newStringProperty("name")
     nameProp.setValue(newPropertyValue("John"))
@@ -263,11 +263,11 @@ suite "バインディングマネージャ":
     check(manager.contexts.len == 1)
     check(manager.contexts.hasKey("user"))
     
-    # コンテキストの取得
+    # Get context
     let context = manager.getContext("user")
     check(context.isSome)
     
-    # バインディングの作成
+    # Create binding
     let targetProp = newStringProperty("displayName")
     let binding = manager.createBinding(nameProp, targetProp)
     
@@ -275,7 +275,7 @@ suite "バインディングマネージャ":
     check(binding.source == nameProp)
     check(binding.target == targetProp)
     
-    # パスによるバインディング
+    # Path-based binding
     let titleProp = newStringProperty("title")
     titleProp.setValue(newPropertyValue("Mr."))
     userContext.addProperty(titleProp)
@@ -287,7 +287,7 @@ suite "バインディングマネージャ":
       let name = nameProp.getValue().asString()
       return newPropertyValue(title & " " & name)
     
-    # パスを使用したバインディング（コンバータ付き）
+    # Path-based binding with converter
     let binding2Result = manager.bindPropertyPath(
       "user.title",
       fullNameProp,
@@ -298,17 +298,17 @@ suite "バインディングマネージャ":
     check(binding2Result.isSome)
     check(fullNameProp.getValue().asString() == "Mr. John")
     
-    # コンテキストの値を変更すると、バインドされたプロパティも更新される
+    # Changing context value updates bound property
     userContext.setPropertyValue("title", newPropertyValue("Dr."))
     check(fullNameProp.getValue().asString() == "Dr. John")
 
-suite "ウィジェットへのバインディング":
-  test "ウィジェットプロパティへのバインディング":
-    # ウィジェットの作成
+suite "Widget binding":
+  test "Binding to widget properties":
+    # Create widget
     let widget = newWidget("testWidget", 0, 0, 10, 10)
     initProperties(widget)
     
-    # データコンテキストの設定
+    # Set data context
     let dataContext = newDataContext()
     let textProp = newStringProperty("text")
     textProp.setValue(newPropertyValue("Hello World"))
@@ -316,18 +316,18 @@ suite "ウィジェットへのバインディング":
     
     setDataContext(widget, dataContext)
     
-    # ウィジェットのプロパティを作成
+    # Create widget property
     let widgetProp = newStringProperty("text")
     widget.properties["text"] = cast[pointer](widgetProp)
     
-    # バインディングの作成
+    # Create binding
     let bindingResult = widget.bindProperty("text", "text")
     check(bindingResult.isSome)
     
-    # データコンテキストの値がウィジェットのプロパティに反映される
+    # Data context value is reflected to widget property
     check(widgetProp.getValue().asString() == "Hello World")
     
-    # データコンテキストの値を変更
+    # Change data context value
     textProp.setValue(newPropertyValue("Updated Text"))
     textProp.notifyValueChanged()
     

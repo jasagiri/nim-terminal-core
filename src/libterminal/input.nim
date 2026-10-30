@@ -5,9 +5,9 @@
 ## including keyboard and mouse input.
 
 import std/posix
-import std/tables
 import std/options
-import std/strutils
+# import std/tables     # Reserved for future use
+# import std/strutils   # Reserved for future use
 import private/common
 import private/signals
 import private/escape_parser

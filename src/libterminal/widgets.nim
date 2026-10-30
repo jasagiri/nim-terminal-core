@@ -5,16 +5,16 @@
 ## for building terminal user interfaces.
 
 import std/tables
-import std/options
-import std/sequtils
-import std/strutils
+# import std/options   # Reserved for future use
+# import std/sequtils  # Reserved for future use
+# import std/strutils  # Reserved for future use
 import std/unicode
 import std/algorithm
 
 import output
 import layout
-import input
-import mouse
+# import input         # Reserved for future use
+# import mouse         # Reserved for future use
 import private/common
 import widget_base
 

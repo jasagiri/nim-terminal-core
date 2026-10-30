@@ -6,7 +6,7 @@ import std/unicode
 import ../src/libterminal
 import ../src/libterminal/private/common
 
-# テストモジュールをインポート
+# Import test modules
 import "test_signals"
 import "test_escape_parser"
 import "test_mouse"
@@ -20,10 +20,30 @@ import "test_output"
 import "test_input"
 import "test_raw"
 
+# Extended test modules for better coverage
+import "test_common"
+import "test_async_driver"
+import "test_input_extended"
+import "test_widget_base_extended"
+import "test_output_extended"
+
+when not defined(noAgents):
+  import "test_actors"
+  import "test_actor_metrics"
+import "test_ninep"
+import "test_high_level"
+
+when defined(test):
+  import ../src/libterminal/private/test_utils
+  # Enable test mode before any tests run
+  enableTestMode()
+
 suite "Terminal initialization":
   test "Enter and exit raw mode":
     # This test can only verify that the calls don't throw exceptions
     # since we can't easily verify the terminal state in automated tests
+    when defined(test):
+      setMockTerminalSize(80, 24)
     check(raw.enterRawMode())
     check(raw.isRawModeEnabled())
     check(raw.exitRawMode())
@@ -36,15 +56,15 @@ suite "Terminal initialization":
     check(height > 0)
   
   test "Raw mode flags":
-    # カスタマイズフラグを使ったRawモード設定
+    # Raw mode setup with custom flags
     check(raw.enterRawMode({RawModeDisableOutput, RawModeNoFlowControl}))
     check(raw.isRawModeEnabled())
     check(raw.exitRawMode())
   
   test "Multiple initializations":
-    # 複数回の初期化（2回目は無視される）
+    # Multiple initializations (second one is ignored)
     check(raw.enterRawMode())
-    check(not raw.enterRawMode())  # 既にRawモードなので失敗する
+    check(not raw.enterRawMode())  # Fails because already in raw mode
     check(raw.exitRawMode())
 
 suite "Buffer operations":
@@ -176,18 +196,18 @@ suite "Input handling":
     check(evt3.kind == EvNone)
   
   test "Mouse enable/disable":
-    # アプリケーションレベルのマウス制御
+    # Application-level mouse control
     var term = newTerminal()
     term.init()
     
-    # マウスの有効化
+    # Enable mouse
     let mouseEnabled = term.enableMouse()
     
-    # 環境によってはマウスサポートがない場合もある
+    # Mouse support may not be available in some environments
     if mouseEnabled:
       check(term.isMouseEnabled())
       
-      # マウスの無効化
+      # Disable mouse
       term.disableMouse()
       check(not term.isMouseEnabled())
     

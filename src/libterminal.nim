@@ -4,6 +4,10 @@
 ## This library provides functionality for terminal manipulation, 
 ## including raw mode handling, input/output processing, and UI components.
 
+when not defined(noAgents):
+  import std/[asyncdispatch, options]
+else:
+  discard  # Agent functionality disabled
 import libterminal/raw
 import libterminal/input
 import libterminal/output
@@ -13,6 +17,9 @@ import libterminal/widgets
 import libterminal/shortcuts
 import libterminal/databinding
 import libterminal/private/unicode_utils
+import libterminal/logging
+import libterminal/errors
+import libterminal/config
 when not defined(noAgents):
   import libterminal/agents
 
@@ -24,6 +31,9 @@ export layout
 export widgets
 export shortcuts
 export databinding
+export logging
+export errors
+export config
 when not defined(noAgents):
   export agents
 
@@ -35,7 +45,7 @@ export unicode_utils.graphemeLength, unicode_utils.splitIntoGraphemeClusters
 export unicode_utils.visualPosToLogical, unicode_utils.logicalPosToVisual
 
 const
-  Version* = "0.1.0"   ## Library version
+  Version* = "0.5.0"   ## Library version
 
 type
   Terminal* = object

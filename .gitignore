@@ -1,0 +1,13 @@
+# Build and coverage artifacts
+nimcache/
+coverage_report/
+*.info
+*.out
+*.dSYM/
+.DS_Store
+# Test executables have no extension
+tests/**/*
+!tests/**/
+!tests/**/*.nim
+# A copy of Python Textual (its own repository) kept beside the code as a design reference
+textual/

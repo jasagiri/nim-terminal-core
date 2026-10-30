@@ -1,13 +1,13 @@
 # test_layout.nim
-## レイアウトシステムテスト
+## Layout system tests
 
 import unittest
 import ../src/libterminal/layout
 import ../src/libterminal/private/common
 import ../src/libterminal/widget_base
 
-suite "基本レイアウト":
-  test "レイアウトノード作成":
+suite "Basic layout":
+  test "Layout node creation":
     let node = newLayoutNode("test", LayoutHorizontal)
     check(node != nil)
     check(node.rect.x == 0)
@@ -21,7 +21,7 @@ suite "基本レイアウト":
     check(node.margin.bottom == 0)
     check(node.children.len == 0)
   
-  test "レイアウトの基本機能":
+  test "Basic layout functionality":
     # Basic layout creation test
     let node1 = newLayoutNode("node1", LayoutVertical)
     let node2 = newLayoutNode("node2", LayoutHorizontal)

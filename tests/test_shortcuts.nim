@@ -1,5 +1,5 @@
 # test_shortcuts.nim
-## ショートカットキーシステムのテスト
+## Shortcut key system tests
 
 import unittest
 import std/tables
@@ -10,19 +10,19 @@ import ../src/libterminal
 import ../src/libterminal/shortcuts
 import ../src/libterminal/private/common
 
-suite "ショートカットキー":
-  test "ショートカットの登録と検索":
-    # ショートカットマネージャの作成
+suite "Shortcut keys":
+  test "Shortcut registration and search":
+    # Create shortcut manager
     let manager = newShortcutManager()
     check(manager != nil)
     check(manager.shortcuts.len == 0)
     
-    # アクションの定義
+    # Define action
     var actionCalled = false
     proc testAction() =
       actionCalled = true
       
-    # ショートカットの登録
+    # Register shortcut
     let id = manager.registerShortcut(
       KeyEnter,
       {ModCtrl},
@@ -31,10 +31,10 @@ suite "ショートカットキー":
       "global"
     )
     
-    check(id >= 0)  # 有効なIDが返される
+    check(id >= 0)  # Valid ID is returned
     check(manager.shortcuts.len == 1)
     
-    # IDによるショートカットの検索
+    # Search shortcut by ID
     let shortcutById = manager.getShortcutById(id)
     check(shortcutById.isSome)
     check(shortcutById.get().key == KeyEnter)
@@ -42,16 +42,16 @@ suite "ショートカットキー":
     check(shortcutById.get().description == "Test Action")
     check(shortcutById.get().context == "global")
     
-    # キーとモディファイアによる検索
+    # Search by key and modifiers
     let shortcutByKey = manager.findShortcut(KeyEnter, {ModCtrl})
     check(shortcutByKey.isSome)
     check(shortcutByKey.get().id == id)
     
-    # 異なるキーの場合は見つからない
+    # Not found for different key
     let notFound = manager.findShortcut(KeyEscape, {ModCtrl})
     check(notFound.isNone)
     
-    # KeyEventによる検索
+    # Search by KeyEvent
     let event = KeyEvent(
       key: KeyEnter,
       modifiers: {ModCtrl}

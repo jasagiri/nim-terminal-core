@@ -7,8 +7,10 @@
 import std/posix
 import std/terminal
 import std/options
-import private/common
+# import private/common  # Currently unused, reserved for future use
 import private/signals
+when defined(test):
+  import private/test_utils
 
 # Import critical posix types directly
 type
@@ -39,9 +41,10 @@ const
   VTIME = 5
   TCSAFLUSH = 2
 
-# Import POSIX functions
-proc tcgetattr(fd: cint, termios_p: var Termios): cint {.importc, header: "<termios.h>".}
-proc tcsetattr(fd: cint, optional_actions: cint, termios_p: Termios): cint {.importc, header: "<termios.h>".}
+# Low-level termios functions (required for terminal control)
+when not defined(test):
+  proc tcgetattr(fd: cint, termios_p: var Termios): cint {.importc, header: "<termios.h>".}
+  proc tcsetattr(fd: cint, optional_actions: cint, termios_p: Termios): cint {.importc, header: "<termios.h>".}
 
 export signals.SignalType
 
@@ -152,7 +155,17 @@ proc enterRawMode*(flags: set[RawModeFlag] = {
   registerSignalHandlers()
   
   # 現在の端末設定を保存
-  discard tcgetattr(STDIN_FILENO, originalTermios)
+  when defined(test):
+    var testTermios = test_utils.Termios()
+    if test_utils.tcgetattrTest(STDIN_FILENO, addr testTermios) < 0:
+      raise newException(TerminalError, "Failed to get terminal attributes")
+    # Copy to our Termios type
+    originalTermios.c_iflag = testTermios.c_iflag
+    originalTermios.c_oflag = testTermios.c_oflag
+    originalTermios.c_cflag = testTermios.c_cflag
+    originalTermios.c_lflag = testTermios.c_lflag
+  else:
+    discard tcgetattr(STDIN_FILENO, originalTermios)
   isInitialized = true
   
   # 新しい設定を作成
@@ -162,8 +175,18 @@ proc enterRawMode*(flags: set[RawModeFlag] = {
   customizeRawMode(raw, flags)
   
   # 設定を適用
-  if tcsetattr(STDIN_FILENO, TCSAFLUSH, raw) < 0:
-    raise newException(TerminalError, "Failed to set terminal to raw mode")
+  when defined(test):
+    var testRaw = test_utils.Termios(
+      c_iflag: raw.c_iflag,
+      c_oflag: raw.c_oflag,
+      c_cflag: raw.c_cflag,
+      c_lflag: raw.c_lflag
+    )
+    if test_utils.tcsetattrTest(STDIN_FILENO, TCSAFLUSH, addr testRaw) < 0:
+      raise newException(TerminalError, "Failed to set terminal to raw mode")
+  else:
+    if tcsetattr(STDIN_FILENO, TCSAFLUSH, raw) < 0:
+      raise newException(TerminalError, "Failed to set terminal to raw mode")
   
   # 初期サイズを記録
   lastKnownSize = (terminalWidth(), terminalHeight())
@@ -182,7 +205,16 @@ proc exitRawMode*(): bool {.discardable.} =
     
   if isInitialized:
     # 元の端末設定を復元
-    discard tcsetattr(STDIN_FILENO, TCSAFLUSH, originalTermios)
+    when defined(test):
+      var testOriginal = test_utils.Termios(
+        c_iflag: originalTermios.c_iflag,
+        c_oflag: originalTermios.c_oflag,
+        c_cflag: originalTermios.c_cflag,
+        c_lflag: originalTermios.c_lflag
+      )
+      discard test_utils.tcsetattrTest(STDIN_FILENO, TCSAFLUSH, addr testOriginal)
+    else:
+      discard tcsetattr(STDIN_FILENO, TCSAFLUSH, originalTermios)
     isRawMode = false
     return true
   
@@ -198,14 +230,20 @@ proc getTerminalSize*(): tuple[width: int, height: int] =
     return lastKnownSize
   else:
     # 現在のサイズを計測
-    let size = (terminalWidth(), terminalHeight())
+    when defined(test):
+      let size = test_utils.mockTerminalSize
+    else:
+      let size = (terminalWidth(), terminalHeight())
     lastKnownSize = size
     return size
 
 proc forceTerminalSizeUpdate*() =
   ## 端末サイズの情報を強制的に更新します。
   ## リサイズイベントが検出されない場合などに使用します。
-  lastKnownSize = (terminalWidth(), terminalHeight())
+  when defined(test):
+    lastKnownSize = test_utils.mockTerminalSize
+  else:
+    lastKnownSize = (terminalWidth(), terminalHeight())
 
 proc isRawModeEnabled*(): bool =
   ## 端末が現在rawモードになっているかを確認します。

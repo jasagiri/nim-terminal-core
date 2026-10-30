@@ -1,92 +1,92 @@
-# 差分更新機能
+# Differential Updates
 
-ターミナルライブラリの効率的な描画処理を実現する差分更新機能について説明します。
+This document explains the differential update feature that enables efficient drawing processing in the terminal library.
 
-## 概要
+## Overview
 
-従来のターミナル描画では、画面を更新するたびに全体を再描画する方法が一般的でした。これは単純ですが、大きな画面や頻繁な更新が必要なアプリケーションでは非効率です。
+Traditional terminal drawing typically redrew the entire screen on each update. While simple, this approach is inefficient for applications with large screens or frequent updates.
 
-差分更新機能は、以下の利点を提供します：
+The differential update feature provides the following benefits:
 
-- **効率性**: 変更された部分のみを更新するため、描画処理が高速化されます
-- **ちらつき減少**: 必要な箇所だけ更新するため、画面のちらつきが軽減されます
-- **帯域幅節約**: リモート接続時などに送信するデータ量が削減されます
+- **Efficiency**: Faster drawing by updating only changed portions
+- **Reduced flicker**: Less screen flicker by updating only necessary areas
+- **Bandwidth savings**: Reduced data transmission for remote connections
 
-## 仕組み
+## How It Works
 
-差分更新は以下のステップで行われます：
+Differential updates are performed in the following steps:
 
-1. 前回描画時の状態（バッファ）を保存しておく
-2. 新しいバッファと前回のバッファを比較して差分を計算
-3. 差分のみを実際のターミナルに送信
+1. Save the previous drawing state (buffer)
+2. Compare the new buffer with the previous buffer to calculate differences
+3. Send only the differences to the actual terminal
 
-以下のケースで最適化が行われます：
+Optimizations are performed in the following cases:
 
-- **文字の変更**: 文字だけが変更された場合、スタイルの再設定は行わない
-- **スタイルの変更**: 同じ文字でスタイルのみが変更された場合、必要なスタイル変更だけを行う
-- **全体更新判断**: 差分が多すぎる場合は画面クリアしてから全体描画する方が効率的
+- **Character changes**: When only characters change, style settings are not reapplied
+- **Style changes**: When only styles change for the same character, only necessary style changes are made
+- **Full update decision**: When there are too many differences, clearing the screen and redrawing everything may be more efficient
 
-## 実装詳細
+## Implementation Details
 
-差分計算と描画処理は `output.nim` モジュールで実装されています：
+Differential calculation and drawing processing are implemented in the `output.nim` module:
 
-### 差分種別
+### Difference Types
 
 ```nim
 type
   DiffOp* = enum
-    DiffNone,    # 変更なし
-    DiffChar,    # 文字の変更
-    DiffFg,      # 前景色の変更
-    DiffBg,      # 背景色の変更
-    DiffAttrs,   # 属性の変更
-    DiffAll      # すべて変更
+    DiffNone,    # No change
+    DiffChar,    # Character change
+    DiffFg,      # Foreground color change
+    DiffBg,      # Background color change
+    DiffAttrs,   # Attribute change
+    DiffAll      # All changed
 ```
 
-### 差分計算
+### Difference Calculation
 
-`calculateDiff` 関数は2つのバッファを比較して変更点のリストを生成します：
+The `calculateDiff` function compares two buffers and generates a list of changes:
 
 ```nim
 proc calculateDiff*(oldBuffer, newBuffer: Buffer): seq[CellDiff]
 ```
 
-### 最適化描画
+### Optimized Drawing
 
-`drawOptimized` 関数は計算された差分に基づいて効率的な描画を行います：
+The `drawOptimized` function performs efficient drawing based on calculated differences:
 
 ```nim
 proc drawOptimized*(buffer: var Buffer)
 ```
 
-この関数は以下を実行します：
-- 前回のバッファと比較して差分を計算
-- 差分が少ない場合は部分更新、多い場合は全体更新を選択
-- カーソル移動を最小化するための経路最適化
+This function performs the following:
+- Calculate differences by comparing with the previous buffer
+- Choose partial update for few differences, full update for many
+- Path optimization to minimize cursor movements
 
-## 使用例
+## Usage Example
 
-差分更新は、`Buffer`型を使用して自動的に有効になります：
+Differential updates are automatically enabled when using the `Buffer` type:
 
 ```nim
-# バッファの作成
+# Create buffer
 var buffer = newBuffer(width, height)
 
-# コンテンツの更新
+# Update content
 buffer.print(x, y, "Hello", style)
 
-# 描画（差分更新が自動的に行われる）
+# Draw (differential updates are performed automatically)
 buffer.drawBuffer()
 ```
 
-具体的なデモは `examples/diff_update_example.nim` を参照してください。このサンプルでは、標準描画と差分描画のパフォーマンス比較を視覚的に確認できます。
+For a concrete demonstration, see `examples/diff_update_example.nim`. This example provides a visual comparison of performance between standard drawing and differential drawing.
 
-## パフォーマンス
+## Performance
 
-差分更新は以下の状況で特に効果を発揮します：
+Differential updates are particularly effective in the following situations:
 
-- 大きな画面での小さな更新（例：ステータスバーの更新）
-- アニメーションや部分的な変更が多い画面
-- 高速な更新が必要なインタラクティブなアプリケーション
+- Small updates on large screens (e.g., status bar updates)
+- Screens with animations or many partial changes
+- Interactive applications requiring fast updates
 
-テストでは、変更が全体の10%以下の場合、従来の方式に比べて5〜10倍のパフォーマンス向上が確認されています。
+In tests, when changes are less than 10% of the total, performance improvements of 5-10x compared to traditional methods have been confirmed.

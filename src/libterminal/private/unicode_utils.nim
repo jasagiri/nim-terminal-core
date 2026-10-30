@@ -7,7 +7,7 @@
 
 import std/unicode
 import std/tables
-import std/sets
+# import std/sets  # Reserved for future use
 import std/strutils
 
 type

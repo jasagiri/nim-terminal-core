@@ -4,7 +4,7 @@
 ## This module handles drawing to the terminal,
 ## including cursor control, colors, and text formatting.
 
-import std/strutils
+# import std/strutils  # Reserved for future use
 import std/unicode
 import std/options
 import std/strformat
@@ -84,6 +84,13 @@ var
   lastBgColor: string = ""                  # 最後に設定した背景色（最適化用）
   lastAttrs: set[Attribute] = {}            # 最後に設定した属性（最適化用）
 
+const
+  defaultStyle* = common.Style(
+    fg: ColorDefault,
+    bg: ColorDefault,
+    attrs: {}
+  )
+
 proc resetColorCache*() =
   ## 色キャッシュをリセット
   lastFgColor = ""
@@ -99,11 +106,6 @@ proc newBuffer*(width, height: int): Buffer =
   )
   # Initialize cells with spaces
   result.cells = newSeq[Cell](width * height)
-  let defaultStyle = common.Style(
-    fg: ColorDefault,
-    bg: ColorDefault,
-    attrs: {}
-  )
   for i in 0..<(width * height):
     result.cells[i] = Cell(
       ch: ' '.Rune, 
@@ -115,11 +117,6 @@ proc newBuffer*(width, height: int): Buffer =
 proc `[]`*(buffer: Buffer, x, y: int): Cell =
   ## Gets the cell at the specified position
   if x < 0 or x >= buffer.width or y < 0 or y >= buffer.height:
-    let defaultStyle = common.Style(
-      fg: ColorDefault, 
-      bg: ColorDefault, 
-      attrs: {}
-    )
     return Cell(
       ch: ' '.Rune, 
       style: defaultStyle, 
@@ -137,11 +134,6 @@ proc `[]=`*(buffer: var Buffer, x, y: int, cell: Cell) =
 
 proc clear*(buffer: var Buffer) =
   ## Clears the buffer, filling it with spaces
-  let defaultStyle = common.Style(
-    fg: ColorDefault,
-    bg: ColorDefault,
-    attrs: {}
-  )
   for i in 0..<(buffer.width * buffer.height):
     buffer.cells[i] = Cell(ch: ' '.Rune, style: defaultStyle, width: 1)
   buffer.dirty = true

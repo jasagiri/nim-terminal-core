@@ -5,10 +5,7 @@
 ## イベントとして変換して処理できるようにします。
 
 import std/posix
-import std/tables
 import std/options
-
-import common
 
 # シグナルの種類を表す列挙型
 type
@@ -31,11 +28,13 @@ var
   signalLock: bool = false
 
 # 元のシグナルハンドラを保存
-var origSigIntHandler: SignalHandler
-var origSigWinchHandler: SignalHandler
-var origSigTermHandler: SignalHandler
-var origSigQuitHandler: SignalHandler
-var origSigHupHandler: SignalHandler
+# Note: These are reserved for future signal handler restoration
+when false:
+  var origSigIntHandler: SignalHandler
+  var origSigWinchHandler: SignalHandler
+  var origSigTermHandler: SignalHandler
+  var origSigQuitHandler: SignalHandler
+  var origSigHupHandler: SignalHandler
 
 # シグナルを SignalType に変換
 proc toSignalType(sig: cint): Option[SignalType] =

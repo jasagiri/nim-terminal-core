@@ -8,7 +8,7 @@ import std/tables
 import std/hashes
 import std/options
 import std/strutils
-import std/macros
+# import std/macros  # Reserved for future use
 import widgets
 
 type

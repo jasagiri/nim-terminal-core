@@ -5,11 +5,11 @@
 ## to avoid circular dependencies.
 
 import std/tables
-import std/options
-import std/sequtils
-import std/strutils
+# import std/options   # Reserved for future use
+# import std/sequtils  # Reserved for future use
+# import std/strutils  # Reserved for future use
 import std/unicode
-import input
+# import input         # Reserved for future use
 import output
 import layout
 import private/common
@@ -223,3 +223,17 @@ proc initWidget*(widget: Widget, id: string, x, y, width, height: int) =
   widget.bgStyle = Style(fg: ColorWhite, bg: ColorBlack, attrs: {})
   widget.focusStyle = Style(fg: ColorWhite, bg: ColorBlue, attrs: {})
   widget.disabledStyle = Style(fg: ColorBrightBlack, bg: ColorBlack, attrs: {})
+
+#-----------------------------------------------------------------
+# Base Methods
+#-----------------------------------------------------------------
+
+method render*(widget: Widget) {.base.} =
+  ## Base render method for widgets without buffer
+  ## Override this in derived widgets
+  discard
+
+method handleEvent*(widget: Widget, event: WidgetEvent): bool {.base.} =
+  ## Base event handler for widget events
+  ## Override this in derived widgets
+  return false

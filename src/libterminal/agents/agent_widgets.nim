@@ -148,13 +148,7 @@ method handleEvent*(widget: AgentChatWidget, event: WidgetEvent): bool =
         )
         widget.addMessage(userMessage)
         widget.inputBuffer = ""
-        # Emit custom event for message submission
-        let messageEvent = WidgetEvent(
-          kind: WidgetCustom,
-          customKind: "message_submitted",
-          customData: cast[pointer](addr userMessage)
-        )
-        discard widget.parent.handleEvent(messageEvent)
+        # TODO: Implement proper event propagation for custom events
         return true
     of KeyBackspace:
       if widget.inputBuffer.len > 0:
@@ -163,9 +157,9 @@ method handleEvent*(widget: AgentChatWidget, event: WidgetEvent): bool =
     else:
       discard
   of WidgetChar:
-    if event.ch.int in 32..126:  # Printable characters
-      widget.inputBuffer.add($event.ch)
-      return true
+    # Handle printable characters
+    widget.inputBuffer.add(event.ch)
+    return true
   else:
     discard
   
@@ -296,9 +290,9 @@ method handleEvent*(widget: CommandPaletteWidget, event: WidgetEvent): bool =
     else:
       discard
   of WidgetChar:
-    if event.ch.int in 32..126:  # Printable characters
-      widget.currentInput.add($event.ch)
-      return true
+    # Handle printable characters
+    widget.currentInput.add(event.ch)
+    return true
   else:
     discard
   

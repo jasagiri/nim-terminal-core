@@ -1,5 +1,5 @@
 # test_widgets.nim
-## ウィジェットシステムテスト
+## Widget system tests
 
 import unittest
 import std/tables
@@ -25,79 +25,79 @@ import ../src/libterminal/tabview
 import ../src/libterminal/treeview
 import ../src/libterminal/tableview
 
-suite "ウィジェット基本機能":
-  test "ウィジェット作成":
-    # 基本ウィジェットのインスタンス作成
+suite "Basic widget functionality":
+  test "Widget creation":
+    # Create basic widget instance
     let widget = newWidget("test_widget", 0, 0, 10, 5)
     check(widget != nil)
     check(widget.id == "test_widget")
     check(widget.children.len == 0)
     check(widget.parent == nil)
     
-    # フラグのデフォルト値
+    # Default flag values
     check(WidgetVisible in widget.flags)
     check(WidgetEnabled in widget.flags)
 
-  test "親子関係":
+  test "Parent-child relationships":
     let parent = newWidget("parent", 0, 0, 20, 10)
     let child1 = newWidget("child1", 0, 0, 10, 5)
     let child2 = newWidget("child2", 0, 0, 10, 5)
     
-    # 子ウィジェットの追加
+    # Add child widgets
     parent.addChild(child1)
     parent.addChild(child2)
     
-    # 親子関係の確認
+    # Verify parent-child relationships
     check(parent.children.len == 2)
     check(child1.parent == parent)
     check(child2.parent == parent)
     check(parent.children[0] == child1)
     check(parent.children[1] == child2)
     
-    # 子ウィジェットの削除
+    # Remove child widget
     discard parent.removeChild(child1)
     check(parent.children.len == 1)
     check(parent.children[0] == child2)
     check(child1.parent == nil)
     
-    # 再度追加
+    # Add again
     parent.addChild(child1)
     check(parent.children.len == 2)
     
-    # すべての子を削除
+    # Remove all children
     # parent.removeAllChildren()  # Method not implemented
     # check(parent.children.len == 0)
     # check(child1.parent == nil)
     # check(child2.parent == nil)
 
-  test "ウィジェットフラグ":
+  test "Widget flags":
     let widget = newWidget("test", 0, 0, 10, 5)
     
-    # デフォルトフラグ
+    # Default flags
     check(WidgetVisible in widget.flags)
     check(WidgetEnabled in widget.flags)
     check(not (WidgetFocused in widget.flags))
     
-    # フラグの設定
+    # Set flags
     widget.flags.incl(WidgetFocused)
     check(WidgetFocused in widget.flags)
     
-    # フラグの解除
+    # Unset flags
     widget.flags.excl(WidgetVisible)
     check(not (WidgetVisible in widget.flags))
     
-    # 可視性と有効状態の変更
+    # Change visibility and enabled state
     widget.setVisible(true)
     check(WidgetVisible in widget.flags)
     
     widget.setEnabled(false)
     check(not (WidgetEnabled in widget.flags))
 
-  test "イベントハンドラ":
+  test "Event handlers":
     let widget = newWidget("test", 0, 0, 10, 5)
     var handlerCalled = false
     
-    # イベントハンドラの追加
+    # Add event handler
     proc testHandler(w: Widget, event: WidgetEvent): bool =
       check(w == widget)
       check(event.kind == WidgetMouseDown)
@@ -106,11 +106,11 @@ suite "ウィジェット基本機能":
     
     widget.addEventHandler(WidgetMouseDown, testHandler)
     
-    # ハンドラが正しく追加されたか確認
+    # Verify handler was added correctly
     check(widget.eventHandlers.hasKey(WidgetMouseDown))
     check(widget.eventHandlers[WidgetMouseDown].len == 1)
     
-    # イベントの発生
+    # Trigger event
     let event = Event(
       kind: EvMouse,
       mouse: MouseEvent(
@@ -123,25 +123,25 @@ suite "ウィジェット基本機能":
     )
     let handled = widget.handleEvent(event)
     
-    # ハンドラが呼ばれたか確認
+    # Verify handler was called
     check(handlerCalled)
     check(handled)
     
-    # イベントハンドラの削除
+    # Remove event handler
     widget.removeEventHandler(WidgetMouseDown, testHandler)
     check(not widget.eventHandlers.hasKey(WidgetMouseDown))
     
-    # 複数のハンドラ
+    # Multiple handlers
     var handler1Called = false
     var handler2Called = false
     
     proc handler1(w: Widget, event: WidgetEvent): bool =
       handler1Called = true
-      return false  # イベント伝播を続ける
+      return false  # Continue event propagation
       
     proc handler2(w: Widget, event: WidgetEvent): bool =
       handler2Called = true
-      return true   # イベント伝播を停止
+      return true   # Stop event propagation
     
     widget.addEventHandler(WidgetMouseDown, handler1)
     widget.addEventHandler(WidgetMouseDown, handler2)
@@ -149,25 +149,25 @@ suite "ウィジェット基本機能":
     let handled2 = widget.handleEvent(event)
     check(handler1Called)
     check(handler2Called)
-    check(handled2)  # handler2がtrueを返したので全体としてもtrue
+    check(handled2)  # true overall because handler2 returned true
 
-suite "基本ウィジェット":
-  test "ラベル":
+suite "Basic widgets":
+  test "Label":
     let label = newLabel("label_id", "Hello World")
     check(label != nil)
     check(label.id == "label_id")
     check(label.getText() == "Hello World")
     
-    # テキストの変更
-    label.setText("こんにちは世界")
+    # Change text
+    label.setText("こんにちは世界")  # "Hello World" in Japanese
     check(label.getText() == "こんにちは世界")
     
-    # スタイルの変更
+    # Change style
     label.style = Style(fg: ColorRed, bg: ColorBlue)
     check(label.style.fg == ColorRed)
     check(label.style.bg == ColorBlue)
 
-  test "ボタン":
+  test "Button":
     var clicked = false
     proc onButtonClick(widget: Widget, event: WidgetEvent): bool =
       clicked = true
@@ -177,20 +177,20 @@ suite "基本ウィジェット":
     check(button != nil)
     check(button.getText() == "Click Me")
     
-    # クリックハンドラを追加
+    # Add click handler
     button.onClick(onButtonClick)
     
-    # ウィジェットの位置とサイズを設定
+    # Set widget position and size
     button.rect = Rect(x: 0, y: 0, width: 20, height: 1)
     
-    # rectが正しく設定されているか確認
+    # Verify rect is set correctly
     check(button.rect.x == 0)
     check(button.rect.y == 0) 
     check(button.rect.width == 20)
     check(button.rect.height == 1)
     
-    # クリックイベントをシミュレート
-    # まずマウスプレス (ボタンの範囲内の座標を使用)
+    # Simulate click event
+    # First mouse press (using coordinates within button bounds)
     let pressEvent = Event(
       kind: EvMouse,
       mouse: MouseEvent(
@@ -203,10 +203,10 @@ suite "基本ウィジェット":
     )
     discard button.handleEvent(pressEvent)
     
-    # アクティブフラグが設定されているか確認
+    # Verify active flag is set
     check(button.isActive())
     
-    # 次にマウスリリース（クリックを完成させる）
+    # Then mouse release (complete the click)
     let releaseEvent = Event(
       kind: EvMouse,
       mouse: MouseEvent(
@@ -219,31 +219,31 @@ suite "基本ウィジェット":
     )
     discard button.handleEvent(releaseEvent)
     
-    # ハンドラが呼ばれたか確認
+    # Verify handler was called
     check(clicked)
 
-  test "チェックボックス":
+  test "Checkbox":
     let checkbox = newCheckbox("checkbox_id", "Option")
     check(checkbox != nil)
     check(checkbox.getText() == "Option")
     check(not checkbox.isChecked())
     
-    # 状態の変更
+    # Change state
     checkbox.setChecked(true)
     check(checkbox.isChecked())
     
-    # トグル操作
+    # Toggle operation
     checkbox.toggle()
     check(not checkbox.isChecked())
     
     checkbox.toggle()
     check(checkbox.isChecked())
     
-    # ウィジェットの位置とサイズを設定（マウスイベントのため）
+    # Set widget position and size (for mouse event)
     checkbox.rect = Rect(x: 0, y: 0, width: 20, height: 1)
     
-    # クリックでトグルされるか確認
-    # マウスプレス (チェックボックスの範囲内の座標を使用)
+    # Verify click toggles state
+    # Mouse press (using coordinates within checkbox bounds)
     let pressEvent = Event(
       kind: EvMouse,
       mouse: MouseEvent(
@@ -256,7 +256,7 @@ suite "基本ウィジェット":
     )
     discard checkbox.handleEvent(pressEvent)
     
-    # マウスリリース（クリックを完成させる）
+    # Mouse release (complete the click)
     let releaseEvent = Event(
       kind: EvMouse,
       mouse: MouseEvent(
@@ -270,19 +270,19 @@ suite "基本ウィジェット":
     discard checkbox.handleEvent(releaseEvent)
     check(not checkbox.isChecked())
 
-  test "テキスト入力":
+  test "Text input":
     let textInput = newTextInput("input_id", "Initial Text")
     check(textInput != nil)
     check(textInput.getText() == "Initial Text")
     
-    # テキストの変更
+    # Change text
     textInput.setText("New Text")
     check(textInput.getText() == "New Text")
     
-    # フォーカスを設定
+    # Set focus
     textInput.setFocused(true)
     
-    # 文字の追加
+    # Add characters
     for c in "Added":
       let event = Event(
         kind: EvKey,
@@ -296,7 +296,7 @@ suite "基本ウィジェット":
     
     check(textInput.getText() == "New TextAdded")
     
-    # バックスペースのテスト
+    # Test backspace
     let backspaceEvent = Event(
       kind: EvKey,
       key: KeyEvent(
@@ -309,28 +309,28 @@ suite "基本ウィジェット":
     
     check(textInput.getText() == "New TextAdde")
 
-  test "プログレスバー":
+  test "Progress bar":
     let progressBar = newProgressBar("progress_id")
     check(progressBar != nil)
     check(progressBar.getValue() == 0.0)
     
-    # 値の設定
+    # Set value
     progressBar.setValue(0.5)
     check(progressBar.getValue() == 0.5)
     
-    # 範囲外の値は調整される
+    # Out of range values are adjusted
     progressBar.setValue(-0.1)
     check(progressBar.getValue() == 0.0)
     
     progressBar.setValue(1.5)
     check(progressBar.getValue() == 1.0)
 
-suite "複合ウィジェット":
-  test "リストボックス":
+suite "Composite widgets":
+  test "Listbox":
     let listbox = newListbox("listbox_id")
     check(listbox != nil)
     
-    # 項目の追加
+    # Add items
     listbox.addItem("Item 1")
     listbox.addItem("Item 2")
     listbox.addItem("Item 3")
@@ -340,49 +340,49 @@ suite "複合ウィジェット":
     check(listbox.getItem(1) == "Item 2")
     check(listbox.getItem(2) == "Item 3")
     
-    # 選択項目のテスト
-    check(listbox.getSelectedIndex() == -1)  # 初期状態では選択なし
+    # Test selected item
+    check(listbox.getSelectedIndex() == -1)  # No selection initially
     
     listbox.setSelectedIndex(1)
     check(listbox.getSelectedIndex() == 1)
     check(listbox.getSelectedItem() == some("Item 2"))
     
-    # 範囲外のインデックスは無視される
+    # Out of range index is ignored
     listbox.setSelectedIndex(10)
-    check(listbox.getSelectedIndex() == 1)  # 変更なし
+    check(listbox.getSelectedIndex() == 1)  # No change
     
-    # 項目の削除
+    # Remove item
     listbox.removeItem(0)
     check(listbox.getItemCount() == 2)
-    check(listbox.getItem(0) == "Item 2")  # 元のItem 2が先頭に
-    check(listbox.getSelectedIndex() == 0)  # 選択インデックスも更新
+    check(listbox.getItem(0) == "Item 2")  # Original Item 2 is now at top
+    check(listbox.getSelectedIndex() == 0)  # Selection index also updated
     
     listbox.clearItems()
     check(listbox.getItemCount() == 0)
     check(listbox.getSelectedIndex() == -1)
 
-  test "ダイアログ":
+  test "Dialog":
     let dialog = newDialog("dialog_id", "Title", "Message")
     check(dialog != nil)
     let dialogState = DialogState(dialog.state)
     check(dialogState.title == "Title")
     check(dialogState.content == "Message")
     
-    # ボタンの設定
+    # Set buttons
     let buttons = @[
       DialogButtonInfo(text: "OK", result: DialogOk, isDefault: true, id: "ok"),
       DialogButtonInfo(text: "Cancel", result: DialogCancel, isDefault: false, id: "cancel")
     ]
     dialog.setCustomButtons(buttons)
     
-    # 結果のテスト
-    check(dialog.getResult() == DialogNone)  # 初期状態では結果なし
+    # Test result
+    check(dialog.getResult() == DialogNone)  # No result initially
 
-  test "メニュー":
+  test "Menu":
     let menu = newMenu("menu_id")
     check(menu != nil)
     
-    # 項目の追加
+    # Add items
     let fileItem = newMenuItem("File", "file")
     let editItem = newMenuItem("Edit", "edit")
     let viewItem = newMenuItem("View", "view")
@@ -391,7 +391,7 @@ suite "複合ウィジェット":
     menu.addItem(editItem)
     menu.addItem(viewItem)
     
-    # サブメニューの追加
+    # Add submenu
     let fileMenu = newMenu("file_menu")
     let openItem = newMenuItem("Open", "open")
     let saveItem = newMenuItem("Save", "save")
@@ -401,8 +401,8 @@ suite "複合ウィジェット":
     # Basic menu functionality test
     discard
 
-suite "高度なウィジェット":
-  test "スクロールビュー":
+suite "Advanced widgets":
+  test "Scroll view":
     let content = newWidget("content", 0, 0, 100, 100)
     content.rect = Rect(x: 0, y: 0, width: 100, height: 100)
     
@@ -412,20 +412,20 @@ suite "高度なウィジェット":
     # Basic functionality test
     discard
 
-  test "タブビュー":
+  test "Tab view":
     let tabView = newTabView("tabview_id")
     check(tabView != nil)
 
-  test "基本ウィジェット作成のみテスト":
+  test "Basic widget creation test only":
     # This test just ensures all basic widget types can be created
     discard newTableView("table")
     discard newTreeView("tree") 
     check(true)
 
-  test "ツリービュー":
+  test "Tree view":
     let treeView = newTreeView("treeview_id")
     check(treeView != nil)
 
-  test "テーブルビュー":
+  test "Table view":
     let tableView = newTableView("tableview_id")
     check(tableView != nil)

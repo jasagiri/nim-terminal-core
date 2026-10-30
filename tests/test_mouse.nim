@@ -1,12 +1,12 @@
 # test_mouse.nim
-## マウス機能のテスト
+## Mouse functionality tests
 
 import unittest
 import ../src/libterminal/mouse
 
-suite "マウスモード":
-  test "MouseMode列挙体":
-    # 基本的なチェック - 列挙値の存在確認
+suite "Mouse mode":
+  test "MouseMode enumeration":
+    # Basic check - verify enumeration values exist
     check(MouseNone is MouseMode)
     check(MouseX10 is MouseMode)
     check(MouseVT200 is MouseMode)
@@ -15,55 +15,55 @@ suite "マウスモード":
     check(MouseSGR is MouseMode)
     check(MouseURXVT is MouseMode)
   
-  test "初期状態":
-    # 初期状態ではマウスモードは無効
+  test "Initial state":
+    # Mouse mode is disabled in initial state
     check(getActiveMouseMode() == MouseNone)
   
-  test "マウスモードの有効化と無効化":
-    # マウスモードを有効化
-    # 注: 実際の端末でないとマウスモードが有効にならない可能性があるため、
-    # 戻り値は確認しません
+  test "Mouse mode enable and disable":
+    # Enable mouse mode
+    # Note: Mouse mode may not be enabled if not in a real terminal,
+    # so we don't check the return value
     discard enableMouseMode(MouseX10)
     
-    # モードが変わっているか確認
-    # (端末によってはサポートされていない可能性があるため、条件付きテスト)
+    # Check if mode has changed
+    # (Conditional test as terminal may not support it)
     if getActiveMouseMode() != MouseNone:
       check(getActiveMouseMode() == MouseX10)
       
-      # 別のモードに切り替え
+      # Switch to another mode
       discard enableMouseMode(MouseSGR)
       check(getActiveMouseMode() == MouseSGR)
       
-      # マウスモードを無効化
+      # Disable mouse mode
       disableMouseMode()
       check(getActiveMouseMode() == MouseNone)
     else:
-      # 端末がマウスモードをサポートしていない場合はスキップ
+      # Skip if terminal doesn't support mouse mode
       skip()
   
-  test "マウスモードのサポート確認":
-    # この関数はほとんどの環境で真を返すはず
+  test "Mouse mode support check":
+    # This function should return true in most environments
     let supported = supportsMouseMode()
     check(supported is bool)
   
-  test "マウスモードの切り替え":
-    # 同じモードへの複数回の切り替え
+  test "Mouse mode switching":
+    # Multiple switches to the same mode
     let result1 = enableMouseMode(MouseSGR)
-    let result2 = enableMouseMode(MouseSGR)  # 2回目は偽を返すはず
+    let result2 = enableMouseMode(MouseSGR)  # Second time should return false
     
-    if result1:  # マウスモードがサポートされている場合のみ確認
-      check(not result2)  # 同じモードなので失敗する
+    if result1:  # Only check if mouse mode is supported
+      check(not result2)  # Fails because it's the same mode
       
-      # 別のモード
+      # Different mode
       check(enableMouseMode(MouseVT200))
       
-      # クリーンアップ
+      # Cleanup
       disableMouseMode()
     else:
       skip()
   
-  test "各種マウスモードの切り替え":
-    # すべてのモードをテスト
+  test "Switching between various mouse modes":
+    # Test all modes
     for mode in [MouseX10, MouseVT200, MouseButtonEvent, 
                 MouseAnyEvent, MouseSGR, MouseURXVT]:
       discard enableMouseMode(mode)
@@ -71,8 +71,8 @@ suite "マウスモード":
         check(getActiveMouseMode() == mode)
       disableMouseMode()
     
-    # クリーンアップ
+    # Cleanup
     disableMouseMode()
 
-# テスト終了時にマウスモードを確実に無効化
+# Ensure mouse mode is disabled at test end
 # addTeardown is not available in this unittest version

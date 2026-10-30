@@ -2,179 +2,179 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## プロジェクト概要
+## Project Overview
 
-このリポジトリは、Nim言語のための新しい端末ライブラリの実装です。Nimの特徴を最大限に活かした、純粋なNimによる端末操作および文字ベースのユーザーインターフェースライブラリを目指しています。`vendor`ディレクトリには、参考として様々な言語で実装された端末ライブラリが含まれています。
+This repository is an implementation of a new terminal library for the Nim language. We aim to create a pure Nim terminal manipulation and character-based user interface library that maximizes the features of Nim. The `vendor` directory contains terminal libraries implemented in various languages for reference.
 
-## 開発アプローチ
+## Development Approach
 
-### BDDによる開発プロセス
+### BDD Development Process
 
-1. **仕様の記述**:
-   - 機能ごとに仕様をGherkin形式で記述
-   - 仕様はドキュメントとテストの両方として機能
+1. **Specification Writing**:
+   - Write specifications for each feature in Gherkin format
+   - Specifications serve as both documentation and tests
 
-2. **テスト駆動開発**:
-   - 仕様に基づいたテストを先に実装
-   - 次に機能を実装してテストをパス
+2. **Test-Driven Development**:
+   - Implement tests based on specifications first
+   - Then implement features to pass the tests
 
-3. **イテレーティブな開発**:
-   - `TODO.md`で次のタスクを明確に定義
-   - 一つの機能を完全に実装してから次へ進む
+3. **Iterative Development**:
+   - Clearly define next tasks in `TODO.md`
+   - Fully implement one feature before moving to the next
 
-### MECEによる機能の分類
+### MECE-based Feature Classification
 
-以下の原則で機能を整理し、漏れや重複がないようにします:
+Organize features according to these principles to avoid gaps and overlaps:
 
-1. **低レベルターミナル制御**
-2. **入力処理**
-3. **出力フォーマット**
-4. **高レベルコンポーネント**
+1. **Low-level Terminal Control**
+2. **Input Processing**
+3. **Output Formatting**
+4. **High-level Components**
 
-## Nim言語の特徴を活かした設計
+## Design Leveraging Nim Language Features
 
-### 活用すべきNimの特性
+### Nim Features to Utilize
 
-1. **マクロとテンプレート**:
-   - DSLの作成に活用
-   - コード生成による冗長性の排除
+1. **Macros and Templates**:
+   - Utilize for DSL creation
+   - Eliminate redundancy through code generation
 
-2. **強力な型システム**:
-   - 代数的データ型による表現力の高いモデリング
-   - コンパイル時の安全性確保
+2. **Strong Type System**:
+   - Expressive modeling with algebraic data types
+   - Compile-time safety guarantees
 
-3. **プラグマと手続き型オーバーロード**:
-   - インラインプラグマによる最適化
-   - オーバーロードによる明確なAPI設計
+3. **Pragmas and Procedure Overloading**:
+   - Optimization through inline pragmas
+   - Clear API design through overloading
 
-4. **シンボルとNimVM**:
-   - コンパイル時評価によるパフォーマンス向上
-   - シンボルによる標準的なターミナルコードの表現
+4. **Symbols and NimVM**:
+   - Performance improvements through compile-time evaluation
+   - Express standard terminal codes using symbols
 
-5. **例外処理**:
-   - 適切なエラーハンドリング
-   - 端末状態の適切な復元処理
+5. **Exception Handling**:
+   - Proper error handling
+   - Appropriate terminal state restoration
 
-### モジュール構造
+### Module Structure
 
 ```
 nim-libterminal/
   |- src/
-  |   |- libterminal.nim           # メインモジュール
+  |   |- libterminal.nim           # Main module
   |   |- libterminal/
-  |       |- private/          # 内部実装、プラットフォーム固有コード
-  |       |- raw.nim           # 低レベルターミナル制御
-  |       |- input.nim         # 入力処理（キーボード、マウス）
-  |       |- output.nim        # 出力処理（色、スタイル、カーソル）
-  |       |- widgets.nim       # 高レベルウィジェット
-  |       |- layout.nim        # レイアウト機能
+  |       |- private/          # Internal implementation, platform-specific code
+  |       |- raw.nim           # Low-level terminal control
+  |       |- input.nim         # Input processing (keyboard, mouse)
+  |       |- output.nim        # Output processing (colors, styles, cursor)
+  |       |- widgets.nim       # High-level widgets
+  |       |- layout.nim        # Layout functionality
   |
-  |- tests/                    # BDDスタイルのテスト
-  |- examples/                 # サンプルコード
-  |- specs/                    # Gherkin形式の仕様
+  |- tests/                    # BDD-style tests
+  |- examples/                 # Example code
+  |- specs/                    # Gherkin format specifications
 ```
 
-## 開発手順
+## Development Instructions
 
-### ビルドとテスト
+### Build and Test
 
 ```bash
-# ライブラリのビルド
+# Build the library
 nimble build
 
-# テストの実行
+# Run tests
 nimble test
 
-# ライブラリのインストール
+# Install the library
 nimble install
 
-# Makefileを使用したビルド
+# Build using Makefile
 make build
 make test
 
-# 特定の機能テスト
+# Specific feature tests
 make unicode_test
 make layout_test
 
-# 全サンプルのコンパイル
+# Compile all examples
 make examples
 ```
 
-### サンプルの実行
+### Running Examples
 
 ```bash
-# サンプルのコンパイルと実行
+# Compile and run examples
 nim c -r examples/hello_world.nim
 nim c -r examples/basic_unicode_test.nim
 nim c -r examples/layout_test_simple.nim
 
-# または Makefileを使用
+# Or use Makefile
 make unicode_test
 make layout_test
 ```
 
-## 実装すべき機能
+## Features to Implement
 
-### 1. 低レベルターミナル制御
-- Raw モード管理
-- 端末クリーンアップ（終了時）
-- 端末サイズ検出
-- シグナルハンドリング
+### 1. Low-level Terminal Control
+- Raw mode management
+- Terminal cleanup (on exit)
+- Terminal size detection
+- Signal handling
 
-### 2. 入力処理
-- キーボードイベント（通常キー、ファンクションキー、修飾キー）
-- マウスイベント（端末がサポートする場合）
-- ウィンドウリサイズイベント
-- イベントのキュー管理
+### 2. Input Processing
+- Keyboard events (normal keys, function keys, modifier keys)
+- Mouse events (when supported by terminal)
+- Window resize events
+- Event queue management
 
-### 3. 出力フォーマット
-- カーソル位置制御
-- 色サポート（16色、256色、RGBサポート）
-- テキスト属性（太字、斜体、下線など）
-- 画面クリアとバッファ操作
-- Unicode対応
+### 3. Output Formatting
+- Cursor position control
+- Color support (16 colors, 256 colors, RGB support)
+- Text attributes (bold, italic, underline, etc.)
+- Screen clearing and buffer operations
+- Unicode support
 
-### 4. 高レベルコンポーネント
-- テキストレイアウト
-- 基本ウィジェット（ボタン、テキスト入力など）
-- ウィンドウシステム
-- イベント処理と状態管理
+### 4. High-level Components
+- Text layout
+- Basic widgets (buttons, text input, etc.)
+- Window system
+- Event processing and state management
 
-## アーキテクチャと設計思想
+## Architecture and Design Philosophy
 
-### 階層化されたAPI設計
-- **Low-level (raw.nim)**: ターミナル制御、エスケープシーケンス
-- **Mid-level (input.nim, output.nim)**: イベント処理、バッファ管理
-- **High-level (widgets.nim, layout.nim)**: ウィジェット、レイアウトシステム
+### Layered API Design
+- **Low-level (raw.nim)**: Terminal control, escape sequences
+- **Mid-level (input.nim, output.nim)**: Event processing, buffer management
+- **High-level (widgets.nim, layout.nim)**: Widgets, layout system
 
-### キー技術要素
-- **差分更新システム**: 効率的な画面描画のためのバッファ比較
-- **Unicode対応**: グラフィームクラスターと双方向テキストサポート
-- **イベント駆動アーキテクチャ**: マウス・キーボード・シグナル統合処理
-- **レイアウトエンジン**: CSS Flexbox類似の柔軟なレイアウトシステム
+### Key Technical Elements
+- **Differential Update System**: Buffer comparison for efficient screen drawing
+- **Unicode Support**: Grapheme clusters and bidirectional text support
+- **Event-Driven Architecture**: Integrated mouse/keyboard/signal processing
+- **Layout Engine**: Flexible layout system similar to CSS Flexbox
 
-### ウィジェットシステム
-- **widget_base.nim**: 全ウィジェットの基底クラス（Widget）
-- **イベント伝播**: 親子関係に基づくイベントバブリング
-- **フォーカス管理**: タブナビゲーション対応
-- **データバインディング**: リアクティブなデータ更新
+### Widget System
+- **widget_base.nim**: Base class for all widgets (Widget)
+- **Event Propagation**: Event bubbling based on parent-child relationships
+- **Focus Management**: Tab navigation support
+- **Data Binding**: Reactive data updates
 
-## 開発上の注意点
+## Development Notes
 
-- `vendor`ディレクトリの参考実装を研究する（特にRustのtermionやcrosstermは設計が明確）
-- 全ての端末操作に適切なエラー処理を実装
-- パニック時でも端末状態を適切に復元
-- 様々な端末タイプでの徹底的なテスト
-- 例付きの詳細なAPIドキュメント
-- 低レベルAPI（エスケープシーケンス、端末制御）と高レベルAPI（ウィジェット、レイアウト）を別モジュールで実装
+- Study reference implementations in the `vendor` directory (especially Rust's termion and crossterm which have clear designs)
+- Implement proper error handling for all terminal operations
+- Properly restore terminal state even on panic
+- Thorough testing with various terminal types
+- Detailed API documentation with examples
+- Implement low-level API (escape sequences, terminal control) and high-level API (widgets, layout) in separate modules
 
-## 現在の実装状況
+## Current Implementation Status
 
-詳細な進捗状況は`TODO.md`を参照。主要機能は実装済み：
-- 基本ターミナル制御（Rawモード、シグナル処理）
-- マウス入力・キーボード入力処理
-- Unicode対応（グラフィームクラスター、RTL言語）
-- 色サポート（16色、256色、RGB）
-- レイアウトシステム（水平・垂直分割、グリッド）
-- 基本・複合ウィジェット一式
-- データバインディング・ショートカットシステム
+See `TODO.md` for detailed progress. Main features implemented:
+- Basic terminal control (Raw mode, signal handling)
+- Mouse input and keyboard input processing
+- Unicode support (grapheme clusters, RTL languages)
+- Color support (16 colors, 256 colors, RGB)
+- Layout system (horizontal/vertical split, grid)
+- Complete set of basic and composite widgets
+- Data binding and shortcut system

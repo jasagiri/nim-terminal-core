@@ -1,5 +1,5 @@
 # test_color_utils.nim
-## 色処理関数のテスト
+## Color processing function tests
 
 import unittest
 import ../src/libterminal
@@ -12,26 +12,26 @@ import ../src/libterminal/private/common
 # in the current version of the library. The color functionality is now
 # handled through ColorStyle and setColorStyle functions.
 
-# suite "基本的な色処理":
-#   test "16色の基本色":
+# suite "Basic color processing":
+#   test "Basic 16 colors":
 #     discard
 # 
-# suite "拡張色モード":
-#   test "256色モード":
+# suite "Extended color mode":
+#   test "256 color mode":
 #     discard
 # 
-# suite "RGB色変換":
-#   test "RGBから256色への変換":
+# suite "RGB color conversion":
+#   test "RGB to 256 color conversion":
 #     discard
 
-suite "色サポート検出":
-  test "色モードの検出":
-    # 色サポートの検出はターミナルに依存するため、
-    # 関数が呼び出せることのみを確認
+suite "Color support detection":
+  test "Color mode detection":
+    # Since color support detection depends on the terminal,
+    # we only verify that the function can be called
     let colorMode = detectColorSupport()
     check(colorMode in {ColorBasic, ColorBright, Color256, ColorRGB})
     
-  test "RGBサポートの確認":
-    # 結果はターミナルに依存するが、関数は動作するはず
+  test "RGB support verification":
+    # The result depends on the terminal, but the function should work
     discard supportsRgbColor()
     discard supports256Color()

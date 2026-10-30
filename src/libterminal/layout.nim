@@ -178,7 +178,7 @@ proc calculateLayout*(node: LayoutNode, availableRect: Rect) =
     return
   
   let contentArea = node.contentRect()
-  var remainingSpace = contentArea
+  var remainingSpace {.used.} = contentArea
   var fixedSpace = 0
   var percentSum = 0.0
   var autoCount = 0

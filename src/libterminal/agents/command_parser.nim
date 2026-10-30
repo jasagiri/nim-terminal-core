@@ -2,8 +2,10 @@
 ## 
 ## Parses and routes agent commands in terminal applications
 
-import std/[strutils, tables, sequtils, options, regex]
-import agent_base
+import std/[strutils, tables, sequtils, asyncdispatch]
+# import std/options   # Reserved for future use
+# import std/re        # Reserved for future use
+# import agent_base    # Reserved for future use
 
 type
   CommandType* = enum
