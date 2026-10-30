@@ -28,10 +28,11 @@ if ended.isFailure: quit("example: " & ended.error, 2)
 | `binding` | `Observable[T]`: 値が変わったら知らせる。ウィジェットと両向きにつなぐ |
 | `theme` | 役割 (roFocused・roSelected など) ごとのスタイルと枠の字 |
 | `lineedit` | 1 行の編集 (書記素クラスタ単位、Emacs のキー)。TextInput とシェルが使う |
+| `asyncloop` | std/asyncdispatch の仕事を実行ループで回す (`driveAsync`)。既定の import には入らない |
 | `widgets/*` | Label・Button・Checkbox・TextInput・ListBox・ProgressBar・ScrollView・Dialog・Menu・MenuBar・TabView・TreeView・TableView |
 
 - 規則は ADR-TC-0001 (枠組み) と ADR-TC-0002 (行の編集とウィジェット)。前の版の `specs/*.feature` との対応は `docs/spec/previous-features.md`。
 - 例は `examples/` (hello、form、files、progress)。`nim examples` で `build/` に組む。
 - 依存: `../nim-terminal-io`、`../nim-unicode-width`、`../../nim-outcome` (nim.cfg で source から)。試験の擬似端末は `../nim-libplatform`。`nim test` でテスト。
-- 作り直す前の中身 (端末の層、アクター、エージェント、9P、計測) は jj の履歴の「chore: keep the work in progress before the rebuild」にある。アクター・エージェント・計測は、別のパッケージに切り出す予定。
+- 作り直す前の中身 (端末の層、アクター、エージェント、9P、計測) は jj の履歴の「chore: keep the work in progress before the rebuild」にある。アクターは nim-tui-actors に切り出した。エージェント・計測は、別のパッケージに切り出す予定。
 - ライセンスは MIT。

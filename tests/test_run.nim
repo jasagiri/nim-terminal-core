@@ -9,6 +9,7 @@ import libplatform
 let build = currentSourcePath().parentDir.parentDir / "build"
 let runApp = build / "run_app"
 let launcher = build / "launcher"
+let runAsync = build / "run_async"
 doAssert fileExists(runApp) and fileExists(launcher), "nim test builds them first"
 
 proc pump(master: cint, v: var Vt, until: proc(v: Vt): bool, ms = 5000): bool =
@@ -43,6 +44,15 @@ proc finish(master: cint, v: var Vt, pid: Pid): ChildStatus =
     discard pump(master, v, proc(v: Vt): bool = false, 50)   # Why discard: 読むだけ
 
 suite "run":
+  test "TC-A-8 Given asyncdispatch work in an app When it runs Then timers and sockets of asyncdispatch progress in the app's loop":
+    let p = spawnInPty(SpawnSpec(argv: @[runAsync]), 30, 4).get
+    var v = newVt(30, 4)
+    check pump(p.master, v, shows("clock 150ms"))
+    check pump(p.master, v, shows("net hello"))
+    p.master.send("q")
+    check finish(p.master, v, p.pid) == ChildStatus(pid: p.pid, state: csExited, code: 0)   # problems は空
+    check posix.close(p.master) == 0
+
   test "TC-A-1 Given an app run in a terminal When it starts and quits Then the terminal modes are on while running and all restored after, and TC-A-7 a watched fd is read":
     let p = spawnInPty(SpawnSpec(argv: @[runApp]), 40, 10).get
     var v = newVt(40, 10)

@@ -26,3 +26,4 @@
 | src/nim_terminal_core/widgets/tabview.nim | 未測定 |
 | src/nim_terminal_core/widgets/textinput.nim | 未測定 |
 | src/nim_terminal_core/widgets/treeview.nim | 未測定 |
+| src/nim_terminal_core/asyncloop.nim | 未測定 |

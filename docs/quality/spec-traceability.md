@@ -1,8 +1,8 @@
 # 仕様網羅 (G1)
 
-仕様は ADR-TC-0001 (C・L・E・K・B・A) と ADR-TC-0002 (T・W) の番号つきの規則。テストの名は `TC-<字>-<番号>` から始まる。A-1・A-2・A-5・A-7 は擬似端末の上で試験用のアプリ (`tests/run_app.nim`) を動かし、端末に書かれたバイトを nim-terminal-io の `vt` で読み戻す。A-5 はジョブ制御をする起動役 (`tests/launcher.nim`) の下で動かす (セッションの長の下のグループは孤児になり、カーネルが SIGTSTP を捨てるため)。
+仕様は ADR-TC-0001 (C・L・E・K・B・A) と ADR-TC-0002 (T・W) の番号つきの規則。テストの名は `TC-<字>-<番号>` から始まる。A-1・A-2・A-5・A-7 は擬似端末の上で試験用のアプリ (`tests/run_app.nim`、A-8 は `tests/run_async.nim`) を動かし、端末に書かれたバイトを nim-terminal-io の `vt` で読み戻す。A-5 はジョブ制御をする起動役 (`tests/launcher.nim`) の下で動かす (セッションの長の下のグループは孤児になり、カーネルが SIGTSTP を捨てるため)。
 
-**85 / 85** (未対応 0)
+**86 / 86** (未対応 0)
 
 | 規則 | テスト |
 |---|---|
@@ -54,6 +54,7 @@
 | T-6 | `tests/test_lineedit.nim` |
 | A-1 | `tests/test_run.nim` |
 | A-7 | `tests/test_run.nim` |
+| A-8 | `tests/test_run.nim` |
 | A-2 | `tests/test_run.nim` |
 | A-5 | `tests/test_run.nim` |
 | W-1 | `tests/test_widgets.nim` |
